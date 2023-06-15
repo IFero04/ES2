@@ -1,0 +1,62 @@
+﻿@page "/fetchevents"
+@using BusinessLogic.Models
+@inject HttpClient Http
+
+<PageTitle>Eventos</PageTitle>
+
+<h1>Eventos</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (events == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <table style="width: 100%">
+        <tr>
+            <th>Nome</th>
+            <th>Data</th>
+            <th>Hora</th>
+            <th>Local</th>
+            <th>Descrição</th>
+            <th>Capacidade Máxima</th>
+            <th>Categoria</th>
+            <th>Id Organizador</th>
+            <th>Organizador</th>
+            
+        </tr>
+        <tbody>
+        @foreach (var evt in events)
+        {
+            <tr>
+                <td>@evt.Nome</td>
+                <td>@evt.Data</td>
+                <td>@evt.Hora</td>
+                <td>@evt.Local</td>
+                <td>@evt.Descricao</td>
+                <td>@evt.Capacidademax</td>
+                <td>@evt.Categoria</td>
+                <td>@evt.Organizador</td>
+                <td>@evt.NomeOrganizador</td>
+                
+                
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private EventoViewModel[]? events;
+
+    protected override async Task OnInitializedAsync()
+    {
+        events = await Http.GetFromJsonAsync<EventoViewModel[]>("http://localhost:5052/api/Events");
+    }
+}
+
+
