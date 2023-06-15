@@ -2,5 +2,5 @@ namespace BusinessLogic.Models;
 
 public class CreateMensagemModel
 {
-    public string Mensagem { get; set; }
+    public string Mensagem { get; set; } = null!;
 }
