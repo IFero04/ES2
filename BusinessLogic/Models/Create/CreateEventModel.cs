@@ -9,7 +9,7 @@ public class CreateEventModel
     public string Hora { get; set; } = null!;
     public string Local { get; set; } = null!;
     public string? Descricao { get; set; }
-    public string? Categoria { get; set; }
+    public string Categoria { get; set; } = null!;
     public int Capacidade { get; set; }
     public CreateIngressoModel[]? Ingressos { get; set; }
     public CreateAtividadeModel[]? Atividades { get; set; }

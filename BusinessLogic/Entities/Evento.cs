@@ -17,7 +17,7 @@ public partial class Evento
 
     public string? Descricao { get; set; }
 
-    public string Categoria { get; set; } = null!;
+    public string? Categoria { get; set; } = null!;
 
     public int Capacidade { get; set; }
 
