@@ -1,0 +1,38 @@
+@page "/UserData"
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+@using Microsoft.JSInterop;
+@using System.Text.Json;
+@using System.IdentityModel.Tokens.Jwt;
+
+<h3>UserData</h3>
+<p>Token claims:</p>
+
+@if (_tokenClaims.ContainsKey("unique_name"))
+{
+    <p>Username: @_tokenClaims["unique_name"]</p>
+}
+
+@if (_tokenClaims.ContainsKey("idUtilizador"))
+{
+    <p>ID do Utilizador: @_tokenClaims["idUtilizador"]</p>
+}
+
+@code {
+    private Dictionary<string, string> _tokenClaims = new Dictionary<string, string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+    // Obter o token armazenado em Local Storage
+        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+
+        if (!string.IsNullOrEmpty(token))
+        {
+    // Decodificar o token JWT para obter os claims
+            var jwtHandler = new JwtSecurityTokenHandler();
+            var decodedToken = jwtHandler.ReadJwtToken(token);
+
+    // Converter os claims para um dicionário de chave-valor
+            _tokenClaims = decodedToken.Claims.ToDictionary(c => c.Type, c => c.Value);
+        }
+    }
+}
