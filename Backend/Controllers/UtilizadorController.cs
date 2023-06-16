@@ -50,7 +50,7 @@ namespace Backend.Controllers
 
             return utilizador;
         }
-
+        
         // PUT: api/Utilizador/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
@@ -87,6 +87,11 @@ namespace Backend.Controllers
         [HttpPost]
         public async Task<ActionResult<Utilizador>> PostUtilizador(CreateUtilizadorModel model)
         {
+            if (await _context.Utilizadors.AnyAsync(u => u.Username == model.Username))
+            {
+                return Conflict("Username already exists.");
+            }
+            
             var tipoUtilizador = model.Organizador ? "Organizador": "Participante";
 
             var utilizador = new Utilizador()

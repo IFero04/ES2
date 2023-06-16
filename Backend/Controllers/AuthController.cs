@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BusinessLogic.Context;
 using BusinessLogic.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -12,33 +13,61 @@ namespace Backend.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        public AuthController(IConfiguration configuration)
+        private readonly ES2DBContext _context;
+
+        public AuthController(IConfiguration configuration, ES2DBContext context)
         {
             _configuration = configuration;
+            _context = context;
         }
+
         [HttpPost("token")]
         public IActionResult GenerateToken([FromBody] AuthModel login)
         {
             if (IsValidUser(login))
             {
-                var token = GenerateJwtToken(login.Username);
+                var token = GenerateJwtToken(login.Username, login.Id);
                 return Ok(new { Token = token });
             }
+
             return Unauthorized();
         }
-        private static bool IsValidUser(AuthModel login)
+
+        private bool IsValidUser(AuthModel login)
         {
-            return login is { Username: "es2", Password: "es2" };
+            try
+            {
+                var utilizador = _context.Utilizadors.SingleOrDefault(u => u.Username == login.Username);
+
+                if (utilizador != null)
+                {
+                    if (utilizador.Senha == login.Password)
+                    {
+                        login.Id = utilizador.Id;
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao verificar as credenciais do usuário: {ex.Message}");
+            }
+
+            return false;
         }
-        private string GenerateJwtToken(string username)
+
+        private string GenerateJwtToken(string username, Guid idUtilizador)
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, username)
+                new Claim(ClaimTypes.Name, username),
+                new Claim("idUtilizador", idUtilizador.ToString())
             };
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var expires = DateTime.Now.AddMinutes(Convert.ToDouble(_configuration["JwtSettings:TokenExpirationTimeInMinutes"]));
+
             var token = new JwtSecurityToken(
                 _configuration["JwtSettings:Issuer"],
                 _configuration["JwtSettings:Audience"],
@@ -46,6 +75,7 @@ namespace Backend.Controllers
                 expires: expires,
                 signingCredentials: credentials
             );
+
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
