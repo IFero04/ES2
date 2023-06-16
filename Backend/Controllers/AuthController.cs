@@ -26,7 +26,7 @@ namespace Backend.Controllers
         {
             if (IsValidUser(login))
             {
-                var token = GenerateJwtToken(login.Username, login.Id);
+                var token = GenerateJwtToken(login.Username, login.Id, login.Tipo);
                 return Ok(new { Token = token });
             }
 
@@ -43,6 +43,7 @@ namespace Backend.Controllers
                 {
                     if (utilizador.Senha == login.Password)
                     {
+                        login.Tipo = utilizador.Tipo;
                         login.Id = utilizador.Id;
                         return true;
                     }
@@ -56,12 +57,13 @@ namespace Backend.Controllers
             return false;
         }
 
-        private string GenerateJwtToken(string username, Guid idUtilizador)
+        private string GenerateJwtToken(string username, Guid idUtilizador, string tipo)
         {
             var claims = new[]
             {
                 new Claim(ClaimTypes.Name, username),
-                new Claim("idUtilizador", idUtilizador.ToString())
+                new Claim("idUtilizador", idUtilizador.ToString()),
+                new Claim(ClaimTypes.Role, tipo)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]));

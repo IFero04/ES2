@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using BusinessLogic.Context;
 using BusinessLogic.Entities;
 using BusinessLogic.Models;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.IO;
+
 
 namespace Backend.Controllers
 {
@@ -82,6 +86,12 @@ namespace Backend.Controllers
         [HttpPost]
         public async Task<ActionResult<Evento>> PostEvento([FromBody]CreateEventModel model)
         {
+            var options = new JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                ReferenceHandler = ReferenceHandler.Preserve
+            };
+            
             var evento = new Evento()
             {
                 Nome = model.Nome,
@@ -91,44 +101,42 @@ namespace Backend.Controllers
                 Descricao = model.Descricao,
                 Categoria = model.Categoria,
                 Capacidade = model.Capacidade,
+                IdOrganizador = Guid.Parse("39bf1456-5b98-44ef-961c-2c4811b4e68f")
             };
 
-            var cont = 0;
-            
+            var eventoId = evento.Id;
+
             if (model.Ingressos != null)
             {
+                int cont = 0;
+                int ingressosCount = 1;
+                var eventoCapacidae = evento.Capacidade;
+                
                 foreach (var ingresso in model.Ingressos)
                 {
-                    if (ingresso.Quantidade + cont > model.Capacidade)
+                    if (ingressosCount > 3)
                     {
                         break;
                     }
-                    cont += ingresso.Quantidade;
+                    
+                    if (cont + ingresso.Quantidade > eventoCapacidae)
+                    {
+                        break;
+                    }
+                    
                     evento.Ingressos.Add(new Ingresso()
                     {
                         Nome = ingresso.Nome,
                         Preco = ingresso.Preco,
                         Quantidade = ingresso.Quantidade,
-                        IdEvento = evento.Id
+                        IdEvento = eventoId
                     });
+                    
+                    cont += ingresso.Quantidade;
+                    ingressosCount++;
                 }
             }
-            
-            if (model.Atividades != null)
-            {
-                foreach (var atividade in model.Atividades)
-                {
-                    evento.Atividades.Add(new Atividade()
-                    {
-                        Nome = atividade.Nome,
-                        Data = atividade.Data,
-                        Hora = atividade.Hora,
-                        Descricao = atividade.Descricao,
-                        IdEvento = evento.Id
-                    });
-                }
-            }
-            
+    
             _context.Eventos.Add(evento);
             await _context.SaveChangesAsync();
 
