@@ -47,6 +47,8 @@ namespace Backend.Controllers
                         login.Id = utilizador.Id;
                         return true;
                     }
+
+                    return false;
                 }
             }
             catch (Exception ex)
