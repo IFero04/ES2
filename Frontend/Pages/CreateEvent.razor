@@ -1,0 +1,291 @@
+﻿@page "/create-event"
+@using System.ComponentModel.DataAnnotations
+@using BusinessLogic.Models
+@inject HttpClient Http
+
+<h3>Create Event</h3>
+
+<EditForm Model="@_registarEvento" OnValidSubmit="@HandleCreateEvent">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="name">Event Name:</label>
+        <InputText id="name" @bind-Value="@_registarEvento.Nome" class="form-control" />
+        <ValidationMessage For="@(() => _registarEvento.Nome)" />
+    </div>
+
+    <div class="form-group">
+        <label for="dateTime">Date and Time:</label>
+        <input type="datetime-local" id="dateTime" @bind="_registarEvento.DataTime" class="form-control" />
+        <ValidationMessage For="@(() => _registarEvento.DataTime)" />
+    </div>
+
+    <div class="form-group">
+        <label for="location">Location:</label>
+        <InputText id="location" @bind-Value="@_registarEvento.Local" class="form-control" />
+        <ValidationMessage For="@(() => _registarEvento.Local)" />
+    </div>
+
+    <div class="form-group">
+        <label for="description">Description:</label>
+        <InputTextArea id="description" @bind-Value="@_registarEvento.Descricao" class="form-control" />
+        <ValidationMessage For="@(() => _registarEvento.Descricao)" />
+    </div>
+    
+    <div class="form-group">
+        <label for="Category">Category:</label>
+        <InputText id="Category" @bind-Value="@_registarEvento.Categoria" class="form-control" />
+        <ValidationMessage For="@(() => _registarEvento.Categoria)" />
+    </div>
+
+    <div class="form-group">
+        <label for="capacity">Capacity:</label>
+        <InputNumber id="capacity" @bind-Value="@_registarEvento.Capacidade" class="form-control" />
+        <ValidationMessage For="@(() => _registarEvento.Capacidade)" />
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Create Event</button>
+    
+    @if (!string.IsNullOrEmpty(_registarEvento.ErrorMessage))
+    {
+        <p class="text-danger">@_registarEvento.ErrorMessage</p>
+    }
+</EditForm>
+<h3>Adicionar Ingressos</h3>
+
+<button class="btn btn-primary" @onclick="AdicionarIngresso">Adicionar Ingresso</button>
+<button class="btn btn-danger" @onclick="RemoverIngresso">Remover Último Ingresso</button>
+
+@if (cont >= 1)
+{
+    <h4>Tickets Information</h4>
+    <h5>Ticket 1</h5>
+    <EditForm Model="@_registarIngresso1">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label for="ticketName_1">Ticket Name:</label>
+            <InputText id="ticketName_1" @bind-Value="_registarIngresso1.Nome" class="form-control" />
+            <ValidationMessage For="@(() => _registarIngresso1.Nome)" />
+        </div>
+        
+        <div class="form-group">
+            <label for="ticketPrice_1">Ticket Price:</label>
+            <InputNumber id="ticketPrice_1" @bind-Value="_registarIngresso1.Preco" class="form-control" />
+            <ValidationMessage For="@(() => _registarIngresso1.Preco)" />
+        </div>
+        <div class="form-group">
+            <label for="ticketQuantity_1">Ticket Quantity:</label>
+            <InputNumber id="ticketQuantity_1" @bind-Value="_registarIngresso1.Quantidade" class="form-control" />
+            <ValidationMessage For="@(() => _registarIngresso1.Quantidade)" />
+        </div>
+    </EditForm>
+}
+@if (cont >= 2)
+{
+    <h5>Ticket 2</h5>
+    <EditForm Model="@_registarIngresso2">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label for="ticketName_2">Ticket Name:</label>
+            <InputText id="ticketName_2" @bind-Value="_registarIngresso2.Nome" class="form-control"/>
+            <ValidationMessage For="@(() => _registarIngresso2.Nome)"/>
+        </div>
+            
+        <div class="form-group">
+            <label for="ticketPrice_2">Ticket Price:</label>
+            <InputNumber id="ticketPrice_2" @bind-Value="_registarIngresso2.Preco" class="form-control"/>
+            <ValidationMessage For="@(() => _registarIngresso2.Preco)"/>
+        </div>
+        <div class="form-group">
+            <label for="ticketQuantity_2">Ticket Quantity:</label>
+            <InputNumber id="ticketQuantity_2" @bind-Value="_registarIngresso2.Quantidade" class="form-control"/>
+            <ValidationMessage For="@(() => _registarIngresso2.Quantidade)"/>
+        </div>
+    </EditForm>
+}
+@if (cont >= 3)
+{
+    <h5>Ticket 3</h5>
+    <EditForm Model="@_registarIngresso3">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label for="ticketName_3">Ticket Name:</label>
+            <InputText id="ticketName_3" @bind-Value="_registarIngresso3.Nome" class="form-control"/>
+            <ValidationMessage For="@(() => _registarIngresso3.Nome)"/>
+        </div>
+                
+        <div class="form-group">
+            <label for="ticketPrice_3">Ticket Price:</label>
+            <InputNumber id="ticketPrice_3" @bind-Value="_registarIngresso3.Preco" class="form-control"/>
+            <ValidationMessage For="@(() => _registarIngresso3.Preco)"/>
+        </div>
+        <div class="form-group">
+            <label for="ticketQuantity_3">Ticket Quantity:</label>
+            <InputNumber id="ticketQuantity_3" @bind-Value="_registarIngresso3.Quantidade" class="form-control"/>
+            <ValidationMessage For="@(() => _registarIngresso3.Quantidade)"/>
+        </div>
+    </EditForm>
+}
+
+@code {
+    private int cont = 0;
+    private readonly RegistarEvento _registarEvento = new RegistarEvento();
+    private readonly RegistarIngresso _registarIngresso1 = new RegistarIngresso();
+    private readonly RegistarIngresso _registarIngresso2 = new RegistarIngresso();
+    private readonly RegistarIngresso _registarIngresso3 = new RegistarIngresso();
+
+    [Inject]
+    private NavigationManager? NavigationManager { get; set; }
+
+    private async Task HandleCreateEvent()
+    {
+        if (ValidateTickets())
+        {
+            _registarEvento.ErrorMessage = String.Empty;
+            
+            var ingressosModel = _registarEvento.Ingressos.Select(ingresso => new CreateIngressoModel
+            {
+                Nome = ingresso.Nome,
+                Preco = ingresso.Preco,
+                Quantidade = ingresso.Quantidade
+            }).ToList();
+            
+            var createEventModel = new CreateEventModel()
+            {
+                Nome = _registarEvento.Nome,
+                Data = DateOnly.FromDateTime(_registarEvento.DataTime),
+                Hora = TimeOnly.FromDateTime(_registarEvento.DataTime).ToString(),
+                Local = _registarEvento.Local,
+                Descricao = _registarEvento.Descricao,
+                Categoria = _registarEvento.Categoria,
+                Capacidade = _registarEvento.Capacidade,
+                Ingressos = ingressosModel
+            };
+
+            var response = await Http.PostAsJsonAsync("http://localhost:5052/api/Evento", createEventModel);
+
+            if (response.IsSuccessStatusCode || (int)response.StatusCode == 500)
+            {
+                NavigationManager?.NavigateTo("/");
+            }
+            else
+            {
+                _registarEvento.ErrorMessage = "An error occurred while creating the event.";
+            }
+        }
+    }
+
+    private bool ValidateTickets()
+    {
+        if (!_registarIngresso1.Validate() && cont >= 1)
+        {
+            _registarEvento.ErrorMessage = "Erro no ticket1";
+            return false;
+        }
+
+        if (!_registarIngresso2.Validate() && cont >= 2)
+        {
+            _registarEvento.ErrorMessage = "Erro no ticket2";
+            return false;
+        }
+    
+        if (!_registarIngresso3.Validate() && cont >= 3)
+        {
+            _registarEvento.ErrorMessage = "Erro no ticket3";
+            return false;
+        }
+
+        var _sum = 0;
+
+        if (cont >= 1)
+        {
+            _registarEvento.Ingressos?.Add(_registarIngresso1);
+            _sum += _registarIngresso1.Quantidade;
+        }
+        
+        if (cont >= 2)
+        {
+            _registarEvento.Ingressos?.Add(_registarIngresso2);
+            _sum += _registarIngresso2.Quantidade;
+        }
+        
+        if (cont >= 3)
+        {
+            _registarEvento.Ingressos?.Add(_registarIngresso3);
+            _sum += _registarIngresso3.Quantidade;
+        }
+
+        if (_sum > _registarEvento.Capacidade)
+        {
+            _registarEvento.ErrorMessage = "Tem mais ingressos do que capacidade!";
+            _registarEvento.Ingressos?.Clear();
+            return false;
+        }
+
+        return true;
+    }
+
+    private void AdicionarIngresso()
+    {
+        if (cont <= 3)
+        {
+            cont++;
+        }
+    }
+
+    private void RemoverIngresso()
+    {
+        if (cont > 0)
+        {
+            cont--;
+        }
+    }
+
+    public class RegistarEvento
+    {
+        [Required(ErrorMessage = "Event name is required.")]
+        public string Nome { get; set; } = null!;
+
+        [Required(ErrorMessage = "Date is required.")]
+        public DateTime DataTime { get; set; }
+
+        [Required(ErrorMessage = "Location is required.")]
+        public string Local { get; set; } = null!;
+
+        public string Descricao { get; set; }
+        
+        [Required(ErrorMessage = "Categoria is required.")]
+        public string Categoria { get; set; } = null!;
+
+        [Required(ErrorMessage = "Capacity is required.")]
+        public int Capacidade { get; set; }
+        
+        public List<RegistarIngresso> Ingressos { get; set; } = new List<RegistarIngresso>();
+        
+        public string ErrorMessage { get; set; } = String.Empty;
+    }
+
+    public class RegistarIngresso
+    {
+        public string Nome { get; set; } = null!;
+
+        public double Preco { get; set; }
+
+        public int Quantidade { get; set; }
+
+        public bool Validate()
+        {
+            if (Nome == String.Empty)
+                return false;
+            if (Preco < 0)
+                return false;
+            if (Quantidade <= 0)
+                return false;
+            return true;
+        }
+    }
+}
