@@ -1,7 +1,9 @@
 ﻿@page "/create-event"
 @using System.ComponentModel.DataAnnotations
+@using System.IdentityModel.Tokens.Jwt
 @using BusinessLogic.Models
 @inject HttpClient Http
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
 <h3>Create Event</h3>
 
@@ -163,6 +165,7 @@
                 Descricao = _registarEvento.Descricao,
                 Categoria = _registarEvento.Categoria,
                 Capacidade = _registarEvento.Capacidade,
+                IdOrganizador = Guid.Parse(_tokenClaims["idUtilizador"]),
                 Ingressos = ingressosModel
             };
 
@@ -286,6 +289,25 @@
             if (Quantidade <= 0)
                 return false;
             return true;
+        }
+    }
+    
+    private Dictionary<string, string> _tokenClaims = new Dictionary<string, string>();
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            var jwtHandler = new JwtSecurityTokenHandler();
+            var decodedToken = jwtHandler.ReadJwtToken(token);
+
+            _tokenClaims = decodedToken.Claims.ToDictionary(c => c.Type, c => c.Value);
+
+            if (_tokenClaims["role"] != "Organizador")
+            {
+                NavigationManager?.NavigateTo("/");
+            }
         }
     }
 }

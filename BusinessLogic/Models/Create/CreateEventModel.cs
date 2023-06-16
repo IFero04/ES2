@@ -11,6 +11,7 @@ public class CreateEventModel
     public string? Descricao { get; set; }
     public string Categoria { get; set; } = null!;
     public int Capacidade { get; set; }
+    public Guid IdOrganizador { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<CreateIngressoModel>? Ingressos { get; set; }
 }
