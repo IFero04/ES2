@@ -2,7 +2,7 @@
 @using System.ComponentModel.DataAnnotations
 @using System.Net
 @inject HttpClient Http
-
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
 <h3>Login</h3>
 
 <EditForm Model="@_loginModel" OnValidSubmit="@HandleLogin">
@@ -34,16 +34,41 @@
 
     [Inject]
     private NavigationManager? NavigationManager { get; set; }
-
+    private IJSRuntime JsRuntime { get; set; }
     private async Task HandleLogin()
     {
         _loginModel.ErrorMessage = String.Empty;
-        
+
         var response = await Http.PostAsJsonAsync("http://localhost:5052/api/Auth/token", _loginModel);
 
         if (response.IsSuccessStatusCode)
         {
-            NavigationManager?.NavigateTo("/");
+            var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
+            var token = tokenResponse?.Token;
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                // Armazenar o token em Local Storage
+                await JSRuntime.InvokeAsync<object>("localStorage.setItem", "token", token);
+
+                // Verificar o armazenamento em Local Storage
+                var storedToken = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+                if (token == storedToken)
+                {
+                    // O armazenamento em Local Storage está funcionando corretamente
+                    
+                    NavigationManager?.NavigateTo("/");
+                }
+                else
+                {
+                    // Ocorreu um erro no armazenamento em Local Storage
+                    _loginModel.ErrorMessage = "Ocorreu um erro no armazenamento em Local Storage.";
+                }
+            }
+            else
+            {
+                _loginModel.ErrorMessage = "O token não foi retornado na resposta.";
+            }
         }
         else if (response.StatusCode == HttpStatusCode.Unauthorized)
         {

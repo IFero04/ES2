@@ -32,4 +32,8 @@
       <Folder Include="Services\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="Models\PesquisarEventoModel.cs" />
+    </ItemGroup>
+
 </Project>
