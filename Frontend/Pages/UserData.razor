@@ -17,6 +17,11 @@
     <p>ID do Utilizador: @_tokenClaims["idUtilizador"]</p>
 }
 
+@if (_tokenClaims.ContainsKey("role"))
+{
+    <p>Role: @_tokenClaims["role"]</p>
+}
+
 @code {
     private Dictionary<string, string> _tokenClaims = new Dictionary<string, string>();
 

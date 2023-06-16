@@ -44,7 +44,7 @@
         {
             Username = _loginModel.Username,
             Password = _loginModel.Password,
-            Tipo = "ERRO"
+            Tipo = "ToChange"
         };
 
         var response = await Http.PostAsJsonAsync("http://localhost:5052/api/Auth/token", authmodel);
