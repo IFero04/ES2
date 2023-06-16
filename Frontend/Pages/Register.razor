@@ -30,13 +30,13 @@
 
     <div class="form-group">
         <label for="password">Password:</label>
-        <InputText id="password" class="form-control" @bind-Value="@_registerModel.Password" />
+        <InputText id="password" class="form-control" @bind-Value="@_registerModel.Password" type="password"/>
         <ValidationMessage For="@(() => _registerModel.Password)" />
     </div>
 
     <div class="form-group">
         <label for="confirmPassword">Confirm Password:</label>
-        <InputText id="confirmPassword" class="form-control" @bind-Value="@_registerModel.ConfirmPassword" />
+        <InputText id="confirmPassword" class="form-control" @bind-Value="@_registerModel.ConfirmPassword" type="password"/>
         <ValidationMessage For="@(() => _registerModel.ConfirmPassword)" />
     </div>
 
