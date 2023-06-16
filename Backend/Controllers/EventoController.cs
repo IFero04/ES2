@@ -103,7 +103,7 @@ namespace Backend.Controllers
                 Descricao = model.Descricao,
                 Categoria = model.Categoria,
                 Capacidade = model.Capacidade,
-                IdOrganizador = Guid.Parse("39bf1456-5b98-44ef-961c-2c4811b4e68f")
+                IdOrganizador = model.IdOrganizador
             };
 
             var eventoId = evento.Id;
