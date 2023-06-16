@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using BusinessLogic.Context;
 using BusinessLogic.Entities;
 using BusinessLogic.Models;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.IO;
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Backend.Controllers
 {
@@ -25,10 +25,6 @@ namespace Backend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Evento>>> GetEventos()
         {
-          if (_context.Eventos == null)
-          {
-              return NotFound();
-          }
             return await _context.Eventos.ToListAsync();
         }
 
@@ -36,10 +32,6 @@ namespace Backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Evento>> GetEvento(Guid id)
         {
-          if (_context.Eventos == null)
-          {
-              return NotFound();
-          }
             var evento = await _context.Eventos.FindAsync(id);
 
             if (evento == null)
@@ -48,6 +40,22 @@ namespace Backend.Controllers
             }
 
             return evento;
+        }
+
+        // GET: api/Evento/organizador/{organizadorId}
+        [HttpGet("{organizadorId}")]
+        public async Task<ActionResult<IEnumerable<Evento>>> GetEventosPorOrganizador(Guid organizadorId)
+        {
+            var eventos = await _context.Eventos
+                .Where(e => e.IdOrganizador == organizadorId)
+                .ToListAsync();
+
+            if (eventos == null || eventos.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return eventos;
         }
 
         // PUT: api/Evento/5
@@ -84,14 +92,8 @@ namespace Backend.Controllers
         // POST: api/Evento
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Evento>> PostEvento([FromBody]CreateEventModel model)
+        public async Task<ActionResult<Evento>> PostEvento([FromBody] CreateEventModel model)
         {
-            var options = new JsonSerializerOptions
-            {
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                ReferenceHandler = ReferenceHandler.Preserve
-            };
-            
             var evento = new Evento()
             {
                 Nome = model.Nome,
@@ -110,20 +112,20 @@ namespace Backend.Controllers
             {
                 int cont = 0;
                 int ingressosCount = 1;
-                var eventoCapacidae = evento.Capacidade;
-                
+                var eventoCapacidade = evento.Capacidade;
+
                 foreach (var ingresso in model.Ingressos)
                 {
                     if (ingressosCount > 3)
                     {
                         break;
                     }
-                    
-                    if (cont + ingresso.Quantidade > eventoCapacidae)
+
+                    if (cont + ingresso.Quantidade > eventoCapacidade)
                     {
                         break;
                     }
-                    
+
                     evento.Ingressos.Add(new Ingresso()
                     {
                         Nome = ingresso.Nome,
@@ -131,12 +133,12 @@ namespace Backend.Controllers
                         Quantidade = ingresso.Quantidade,
                         IdEvento = eventoId
                     });
-                    
+
                     cont += ingresso.Quantidade;
                     ingressosCount++;
                 }
             }
-    
+
             _context.Eventos.Add(evento);
             await _context.SaveChangesAsync();
 
@@ -147,10 +149,6 @@ namespace Backend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEvento(Guid id)
         {
-            if (_context.Eventos == null)
-            {
-                return NotFound();
-            }
             var evento = await _context.Eventos.FindAsync(id);
             if (evento == null)
             {
@@ -165,7 +163,7 @@ namespace Backend.Controllers
 
         private bool EventoExists(Guid id)
         {
-            return (_context.Eventos?.Any(e => e.Id == id)).GetValueOrDefault();
+            return _context.Eventos.Any(e => e.Id == id);
         }
     }
 }
