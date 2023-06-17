@@ -7,6 +7,11 @@
 
 <h3>VerEventosParticipante</h3>
 
+<div class="search-bar">
+    <input type="text" @bind="searchTerm" placeholder="Pesquisar por nome, local, data ou categoria" />
+    <button @onclick="FilterEventos">Pesquisar</button>
+</div>
+
 @if (eventos == null)
 {
     <p>
@@ -16,7 +21,7 @@
 else
 {
     <div class="eventos-container">
-        @foreach (var evento in eventos)
+        @foreach (var evento in eventosFiltrados)
         {
             <div class="evento-card">
                 <h4>@evento.Nome</h4>
@@ -35,15 +40,38 @@ else
 }
 
 @code {
-    List<EventoDetailsModel>? eventos = new List<EventoDetailsModel>();
+    List<EventoDetailsModel> eventos = new List<EventoDetailsModel>();
+    List<EventoDetailsModel> eventosFiltrados = new List<EventoDetailsModel>();
+    
+    private string searchTerm;
 
     private async Task HandleGetEventos()
     {
         var eventosTemp = await Http.GetFromJsonAsync<EventoDetailsModel[]>("http://localhost:5052/api/Evento");
         foreach (var evento in eventosTemp)
         {
-            var temp =await Http.GetFromJsonAsync<EventoDetailsModel>($"http://localhost:5052/api/Evento/Detalhe/{evento.Id}");
+            var temp = await Http.GetFromJsonAsync<EventoDetailsModel>($"http://localhost:5052/api/Evento/Detalhe/{evento.Id}");
             if (temp != null) eventos?.Add(temp);
+        }
+        eventosFiltrados = eventos;
+    }
+    
+    private void AcessarEvento(EventoDetailsModel eventoDetails)
+    {
+        NavigationManager?.NavigateTo($"/evento-detalhes/{eventoDetails.Id}");
+    }
+
+    private void FilterEventos()
+    {
+        eventosFiltrados = eventos;
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            eventosFiltrados = eventos.Where(e =>
+                e.Nome.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                e.Local.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                e.Data.ToShortDateString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                e.Categoria.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
         }
     }
 
@@ -69,12 +97,6 @@ else
 
         await HandleGetEventos();
     }
-
-    private void AcessarEvento(EventoDetailsModel eventoDetails)
-    {
-        // Redirecionar para a página de detalhes do evento com base no ID do evento
-        NavigationManager?.NavigateTo($"/evento-detalhes/{eventoDetails.Id}");
-    }
 }
 
 <style>
@@ -91,5 +113,9 @@ else
 
     .btn-acessar-evento {
         margin-top: 10px;
+    }
+
+    .search-bar {
+        margin-bottom: 20px;
     }
 </style>
