@@ -32,6 +32,11 @@ namespace Backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Evento>> GetEvento(Guid id)
         {
+            if (_context.Utilizadors == null)
+            { 
+                return NotFound();
+            }
+            
             var evento = await _context.Eventos.FindAsync(id);
 
             if (evento == null)
@@ -41,22 +46,62 @@ namespace Backend.Controllers
 
             return evento;
         }
-
-        // GET: api/Evento/organizador/{organizadorId}
-        [HttpGet("{organizadorId}")]
-        public async Task<ActionResult<IEnumerable<Evento>>> GetEventosPorOrganizador(Guid organizadorId)
+        
+        [HttpGet("Detalhe/{id}")]
+        public async Task<ActionResult<EventoDetailsModel>> GetDetalheEvento(Guid id)
         {
-            var eventos = await _context.Eventos
-                .Where(e => e.IdOrganizador == organizadorId)
-                .ToListAsync();
+            var evento = await _context.Eventos
+                .Include(e => e.Atividades)
+                .Include(e => e.Ingressos)
+                .Include(e => e.IdOrganizadorNavigation)
+                .FirstOrDefaultAsync(e => e.Id == id);
 
-            if (eventos == null || eventos.Count == 0)
+            if (evento == null)
             {
                 return NotFound();
             }
+            
+            var atividadesModel = evento.Atividades.Select(atividade => new AtividadeDetalheModel()
+            {
+                Id = atividade.Id,
+                Nome = atividade.Nome,
+                Data = atividade.Data,
+                Hora = atividade.Hora,
+                Descricao = atividade.Descricao
+            }).ToList();
 
-            return eventos;
+            var ingresosModel = evento.Ingressos.Select(ingresso => new IngressoDetalheModel()
+            {
+                Id = ingresso.Id,
+                Nome = ingresso.Nome,
+                Preco = ingresso.Preco,
+                Quantidade = ingresso.Quantidade
+
+            }).ToList();
+
+            var utilizadorModel = new UtilizadorDetalheModel()
+            {
+                Nome = evento.IdOrganizadorNavigation.Nome,
+            };
+
+            var eventoDetails = new EventoDetailsModel
+            {
+                Id = evento.Id,
+                Nome = evento.Nome,
+                Data = evento.Data,
+                Hora = evento.Hora,
+                Local = evento.Local,
+                Descricao = evento.Descricao,
+                Categoria = evento.Categoria,
+                Capacidade = evento.Capacidade,
+                Atividades = atividadesModel,
+                Ingressos = ingresosModel,
+                Organizador = utilizadorModel
+            };
+
+            return eventoDetails;
         }
+
 
         // PUT: api/Evento/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -166,4 +211,5 @@ namespace Backend.Controllers
             return _context.Eventos.Any(e => e.Id == id);
         }
     }
+    
 }

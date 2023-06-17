@@ -37,10 +37,11 @@ namespace Backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Utilizador>> GetUtilizador(Guid id)
         {
-          if (_context.Utilizadors == null)
-          {
-              return NotFound();
-          }
+            if (_context.Utilizadors == null)
+            { 
+                return NotFound();
+            }
+            
             var utilizador = await _context.Utilizadors.FindAsync(id);
 
             if (utilizador == null)
