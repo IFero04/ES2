@@ -4,12 +4,12 @@
 @using System.Text.Json;
 @using System.IdentityModel.Tokens.Jwt;
 
-<h3>UserData</h3>
+<h3>Dados do Usuário</h3>
 <p>Token claims:</p>
 
 @if (_tokenClaims.ContainsKey("unique_name"))
 {
-    <p>Username: @_tokenClaims["unique_name"]</p>
+    <p>Nome de Utilizador: @_tokenClaims["unique_name"]</p>
 }
 
 @if (_tokenClaims.ContainsKey("idUtilizador"))
@@ -19,7 +19,7 @@
 
 @if (_tokenClaims.ContainsKey("role"))
 {
-    <p>Role: @_tokenClaims["role"]</p>
+    <p>Papel: @_tokenClaims["role"]</p>
 }
 
 @code {

@@ -4,20 +4,20 @@
 @using BusinessLogic.Models
 @inject HttpClient Http
 
-<h3>Register</h3>
+<h3>Registar</h3>
 
 <EditForm Model="@_registerModel" OnValidSubmit="@HandleRegister">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="form-group">
-        <label for="name">Name:</label>
+        <label for="name">Nome:</label>
         <InputText id="name" class="form-control" @bind-Value="@_registerModel.Name" />
         <ValidationMessage For="@(() => _registerModel.Name)" />
     </div>
     
     <div class="form-group">
-        <label for="username">Username:</label>
+        <label for="username">Nome de Utilizador:</label>
         <InputText id="username" class="form-control" @bind-Value="@_registerModel.Username" />
         <ValidationMessage For="@(() => _registerModel.Username)" />
     </div>
@@ -29,19 +29,19 @@
     </div>
 
     <div class="form-group">
-        <label for="password">Password:</label>
+        <label for="password">Palavra-Chave:</label>
         <InputText id="password" class="form-control" @bind-Value="@_registerModel.Password" type="password"/>
         <ValidationMessage For="@(() => _registerModel.Password)" />
     </div>
 
     <div class="form-group">
-        <label for="confirmPassword">Confirm Password:</label>
+        <label for="confirmPassword">Confirmar Palavra-Chave:</label>
         <InputText id="confirmPassword" class="form-control" @bind-Value="@_registerModel.ConfirmPassword" type="password"/>
         <ValidationMessage For="@(() => _registerModel.ConfirmPassword)" />
     </div>
 
     <div class="form-group">
-        <label for="phone">Phone:</label>
+        <label for="phone">Telemóvel:</label>
         <InputText id="phone" class="form-control" @bind-Value="@_registerModel.Phone" />
         <ValidationMessage For="@(() => _registerModel.Phone)" />
     </div>
@@ -49,11 +49,11 @@
     <div class="form-group">
         <label class="form-check-label">
             <InputCheckbox @bind-Value="@_registerModel.IsOrganizer"/>
-            Organizer
+            Organizar
         </label>
     </div>
 
-    <button type="submit" class="btn btn-primary">Register</button>
+    <button type="submit" class="btn btn-primary">Registar</button>
     
     @if (!string.IsNullOrEmpty(_registerModel.ErrorMessage))
     {

@@ -4,25 +4,25 @@
 @using BusinessLogic.Models
 @inject HttpClient Http
 @inject Microsoft.JSInterop.IJSRuntime JSRuntime
-<h3>Login</h3>
+<h3>Iniciar Sessão</h3>
 
 <EditForm Model="@_loginModel" OnValidSubmit="@HandleLogin">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="form-group">
-        <label for="username">Username:</label>
+        <label for="username">Nome de Utilizador:</label>
         <InputText id="username" class="form-control" @bind-Value="@_loginModel.Username" />
         <ValidationMessage For="@(() => _loginModel.Username)" />
     </div>
 
     <div class="form-group">
-        <label for="password">Password:</label>
+        <label for="password">Palavra-Chave:</label>
         <InputText id="password" class="form-control" @bind-Value="@_loginModel.Password" type="password"/>
         <ValidationMessage For="@(() => _loginModel.Password)" />
     </div>
 
-    <button type="submit" class="btn btn-primary">Login</button>
+    <button type="submit" class="btn btn-primary">Iniciar Sessão</button>
     
     @if (!string.IsNullOrEmpty(_loginModel.ErrorMessage))
     {
