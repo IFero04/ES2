@@ -114,7 +114,7 @@ namespace Backend.Controllers
             return NoContent();
         }
 
-        [HttpGet("CheckAtividade/{idAtividade}/{idParticipante}")]
+        [HttpGet("CheckInscricao/{idAtividade}/{idParticipante}")]
         public async Task<ActionResult<bool>> CheckInscricao(Guid idAtividade, Guid idParticipante)
         {
             var inscricaoAtividade = await _context.InscricaoAtividades.FirstOrDefaultAsync(i => i.IdAtividade == idAtividade && i.IdParticipante == idParticipante);

@@ -2,7 +2,10 @@
 @using System.ComponentModel.DataAnnotations
 @using System.IdentityModel.Tokens.Jwt
 @using BusinessLogic.Models
+@using BusinessLogic.Services
 @inject HttpClient Http
+@inject IInscricaoService ServiceInscricaoEvento
+@inject IFeedbackService ServiceFeedback
 @inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
 <h3>VerEventosParticipante</h3>
@@ -33,7 +36,8 @@ else
                 <p>Organizador: @evento.NomeOrganizador</p>
                 <p>Número de Atividades: @evento.NumeroAtidades</p>
                 <p>Ingresso Comprado: @evento.Ingressos.FirstOrDefault()?.Preco</p>
-                <button class="btn-acessar-evento" @onclick="() => AcessarEvento(evento)">Acessar Evento</button>
+                <button class="btn btn-primary" @onclick="() => AcessarEvento(evento)">Acessar Evento</button>
+                <button class="btn btn-danger" @onclick="() => RemoverInscricaoEvento(evento)">Remover Evento</button>
             </div>
         }
     </div>
@@ -48,6 +52,26 @@ else
     
     private string searchTerm;
 
+    private async Task RemoverInscricaoEvento(EventoDetailsModel eventoDetails)
+    {
+        Guid? id = await ServiceInscricaoEvento.GetInscricaoByEventoParticipanteId(eventoDetails.Id, Guid.Parse(_tokenClaims["idUtilizador"]));
+        if (id != null)
+        {
+            bool removido = await ServiceInscricaoEvento.RemoverInscricao(id.Value);
+            if (removido)
+            {
+                eventos.Remove(eventoDetails);
+                eventosFiltrados.Remove(eventoDetails);
+            }
+        }
+    }
+
+    
+    private void AcessarEvento(EventoDetailsModel eventoDetails)
+    {
+        NavigationManager?.NavigateTo($"/evento-detalhes/{eventoDetails.Id}");
+    }
+    
     private async Task HandleGetEventos()
     {
         var inscricoes = await Http.GetFromJsonAsync<GetInscricaoEvento>($"http://localhost:5052/api/InscricaoEvento/GetEventosInscritos/{Guid.Parse(idParticipante)}");
@@ -67,11 +91,6 @@ else
         eventosFiltrados = eventos;
     }
     
-    private void AcessarEvento(EventoDetailsModel eventoDetails)
-    {
-        NavigationManager?.NavigateTo($"/evento-detalhes/{eventoDetails.Id}");
-    }
-
     private void FilterEventos()
     {
         eventosFiltrados = eventos;
