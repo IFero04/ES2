@@ -5,49 +5,49 @@
 @inject HttpClient Http
 @inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
-<h3>Create Event</h3>
+<h3>Criar Evento</h3>
 
 <EditForm Model="@_registarEvento" OnValidSubmit="@HandleCreateEvent">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="form-group">
-        <label for="name">Event Name:</label>
+        <label for="name">Nome do Evento:</label>
         <InputText id="name" @bind-Value="@_registarEvento.Nome" class="form-control" />
         <ValidationMessage For="@(() => _registarEvento.Nome)" />
     </div>
 
     <div class="form-group">
-        <label for="dateTime">Date and Time:</label>
+        <label for="dateTime">Data e Hora:</label>
         <input type="datetime-local" id="dateTime" @bind="_registarEvento.DataTime" class="form-control" />
         <ValidationMessage For="@(() => _registarEvento.DataTime)" />
     </div>
 
     <div class="form-group">
-        <label for="location">Location:</label>
+        <label for="location">Localização:</label>
         <InputText id="location" @bind-Value="@_registarEvento.Local" class="form-control" />
         <ValidationMessage For="@(() => _registarEvento.Local)" />
     </div>
 
     <div class="form-group">
-        <label for="description">Description:</label>
+        <label for="description">Descrição:</label>
         <InputTextArea id="description" @bind-Value="@_registarEvento.Descricao" class="form-control" />
         <ValidationMessage For="@(() => _registarEvento.Descricao)" />
     </div>
     
     <div class="form-group">
-        <label for="Category">Category:</label>
+        <label for="Category">Categoria:</label>
         <InputText id="Category" @bind-Value="@_registarEvento.Categoria" class="form-control" />
         <ValidationMessage For="@(() => _registarEvento.Categoria)" />
     </div>
 
     <div class="form-group">
-        <label for="capacity">Capacity:</label>
+        <label for="capacity">Capacidade:</label>
         <InputNumber id="capacity" @bind-Value="@_registarEvento.Capacidade" class="form-control" />
         <ValidationMessage For="@(() => _registarEvento.Capacidade)" />
     </div>
     
-    <button type="submit" class="btn btn-primary">Create Event</button>
+    <button type="submit" class="btn btn-primary">Criar Evento</button>
     
     @if (!string.IsNullOrEmpty(_registarEvento.ErrorMessage))
     {
@@ -61,24 +61,24 @@
 
 @if (cont >= 1)
 {
-    <h4>Tickets Information</h4>
-    <h5>Ticket 1</h5>
+    <h4>Informação dos Ingressos</h4>
+    <h5>Ingresso 1</h5>
     <EditForm Model="@_registarIngresso1">
         <DataAnnotationsValidator />
         <ValidationSummary />
         <div class="form-group">
-            <label for="ticketName_1">Ticket Name:</label>
+            <label for="ticketName_1">Nome do Ingresso:</label>
             <InputText id="ticketName_1" @bind-Value="_registarIngresso1.Nome" class="form-control" />
             <ValidationMessage For="@(() => _registarIngresso1.Nome)" />
         </div>
         
         <div class="form-group">
-            <label for="ticketPrice_1">Ticket Price:</label>
+            <label for="ticketPrice_1">Preço do Ingresso:</label>
             <InputNumber id="ticketPrice_1" @bind-Value="_registarIngresso1.Preco" class="form-control" />
             <ValidationMessage For="@(() => _registarIngresso1.Preco)" />
         </div>
         <div class="form-group">
-            <label for="ticketQuantity_1">Ticket Quantity:</label>
+            <label for="ticketQuantity_1">Quantidade de Ingressos:</label>
             <InputNumber id="ticketQuantity_1" @bind-Value="_registarIngresso1.Quantidade" class="form-control" />
             <ValidationMessage For="@(() => _registarIngresso1.Quantidade)" />
         </div>
@@ -86,23 +86,23 @@
 }
 @if (cont >= 2)
 {
-    <h5>Ticket 2</h5>
+    <h5>Ingresso 2</h5>
     <EditForm Model="@_registarIngresso2">
         <DataAnnotationsValidator />
         <ValidationSummary />
         <div class="form-group">
-            <label for="ticketName_2">Ticket Name:</label>
+            <label for="ticketName_2">Nome do Ingresso:</label>
             <InputText id="ticketName_2" @bind-Value="_registarIngresso2.Nome" class="form-control"/>
             <ValidationMessage For="@(() => _registarIngresso2.Nome)"/>
         </div>
             
         <div class="form-group">
-            <label for="ticketPrice_2">Ticket Price:</label>
+            <label for="ticketPrice_2">Preço do Ingresso:</label>
             <InputNumber id="ticketPrice_2" @bind-Value="_registarIngresso2.Preco" class="form-control"/>
             <ValidationMessage For="@(() => _registarIngresso2.Preco)"/>
         </div>
         <div class="form-group">
-            <label for="ticketQuantity_2">Ticket Quantity:</label>
+            <label for="ticketQuantity_2">Quantidade de Ingressos:</label>
             <InputNumber id="ticketQuantity_2" @bind-Value="_registarIngresso2.Quantidade" class="form-control"/>
             <ValidationMessage For="@(() => _registarIngresso2.Quantidade)"/>
         </div>
@@ -110,23 +110,23 @@
 }
 @if (cont >= 3)
 {
-    <h5>Ticket 3</h5>
+    <h5>Ingresso 3</h5>
     <EditForm Model="@_registarIngresso3">
         <DataAnnotationsValidator />
         <ValidationSummary />
         <div class="form-group">
-            <label for="ticketName_3">Ticket Name:</label>
+            <label for="ticketName_3">Nome do Ingresso:</label>
             <InputText id="ticketName_3" @bind-Value="_registarIngresso3.Nome" class="form-control"/>
             <ValidationMessage For="@(() => _registarIngresso3.Nome)"/>
         </div>
                 
         <div class="form-group">
-            <label for="ticketPrice_3">Ticket Price:</label>
+            <label for="ticketPrice_3">Preço do Ingresso:</label>
             <InputNumber id="ticketPrice_3" @bind-Value="_registarIngresso3.Preco" class="form-control"/>
             <ValidationMessage For="@(() => _registarIngresso3.Preco)"/>
         </div>
         <div class="form-group">
-            <label for="ticketQuantity_3">Ticket Quantity:</label>
+            <label for="ticketQuantity_3">Quantidade de Ingressos:</label>
             <InputNumber id="ticketQuantity_3" @bind-Value="_registarIngresso3.Quantidade" class="form-control"/>
             <ValidationMessage For="@(() => _registarIngresso3.Quantidade)"/>
         </div>

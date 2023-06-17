@@ -25,8 +25,8 @@ else
                 <p>Local: @evento.Local</p>
                 <p>Categoria: @evento.Categoria</p>
                 <p>Capacidade: @evento.Capacidade</p>
-                <p>Número de Atividades: @evento.Atividades.Count</p>
-                <p>Ingresso Barato: @evento.Ingressos.Min(i => i.Preco)</p>
+                <p>Número de Atividades: @evento.NumeroAtidades</p>
+                <p>Ingresso Barato: @evento.IngressoBarato</p>
                 <button class="btn-acessar-evento" @onclick="() => AcessarEvento(evento)">Acessar Evento</button>
             </div>
         }
