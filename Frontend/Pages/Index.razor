@@ -14,6 +14,8 @@ Welcome to your new app.
 <SurveyPrompt Title="How is Blazor working for you?"/>
 
 <button class="btn btn-primary" @onclick="ViewUserData">Ver Dados do Usuário</button>
+<button class="btn btn-primary" @onclick="GoToLogin">Login</button>
+<button class="btn btn-primary" @onclick="GoToRegister">Registar</button>
 
 @if (_tokenClaims == null)
 {
@@ -26,17 +28,15 @@ else
     if (role == "Organizador")
     {
         <h2>Bem-vindo, @name!</h2>
+        <button class="btn btn-primary" @onclick="GoToCriarEventos">Criar Eventos</button>
         <button class="btn btn-primary" @onclick="GoToEventosOrganizador">Ver Meus Eventos</button>
     }
     if (role == "Participante")
     {
         <h2>Bem-vindo, @name!</h2>
+        <button class="btn btn-primary" @onclick="GoToEventosPaticipante">Ver Eventos</button>
     }
 }
-
-
-
-
 
 @code {
     public string role;
@@ -46,11 +46,27 @@ else
     {
         NavigationManager?.NavigateTo("/userdata");
     }
+    private void GoToLogin()
+    {
+        NavigationManager?.NavigateTo("/login");
+    }
+    private void GoToRegister()
+    {
+        NavigationManager?.NavigateTo("/register");
+    }
     private void GoToEventosOrganizador()
     {
         NavigationManager?.NavigateTo($"/eventos/{_tokenClaims["idUtilizador"]}");
     }
-    
+    private void GoToEventosPaticipante()
+    {
+        NavigationManager?.NavigateTo($"/eventos");
+    }
+    private void GoToCriarEventos()
+    {
+        NavigationManager?.NavigateTo($"/criar-evento");
+    }
+
     [Inject]
     private NavigationManager? NavigationManager { get; set; }
     private Dictionary<string, string> _tokenClaims = new Dictionary<string, string>();

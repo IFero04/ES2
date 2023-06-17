@@ -45,6 +45,15 @@ namespace Backend.Controllers
 
             return inscricaoEvento;
         }
+        
+        // GET: api/InscricaoEvento/CheckInscricao/{idEvento}/{idParticipante}
+        [HttpGet("CheckInscricao/{idEvento}/{idParticipante}")]
+        public async Task<ActionResult<bool>> CheckInscricao(Guid idEvento, Guid idParticipante)
+        {
+            var inscricaoEvento = await _context.InscricaoEventos.FirstOrDefaultAsync(i => i.IdEvento == idEvento && i.IdParticipante == idParticipante);
+
+            return inscricaoEvento != null;
+        }
 
         // PUT: api/InscricaoEvento/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
