@@ -37,7 +37,7 @@ else
             <li>@atividade.Hora</li>
             <li>@atividade.Descricao</li>
             
-            @if (podeAtividades)
+            @if (jaInscrito)
             {
                 <button @onclick="() => RegistrarAtividade(atividade.Id)">Registrar-se na Atividade</button>
             }
@@ -60,13 +60,13 @@ else
         }
     </select>
 
-    <button @onclick="RegistrarEvento" disabled="@string.IsNullOrEmpty(selectedIngresso)">Registrar-se no Evento</button>
+    <button @onclick="RegistrarEvento" disabled="@string.IsNullOrEmpty(selectedIngresso) ||@jaInscrito">Registrar-se no Evento</button>
 }
 
 @code {
     private EventoDetailsModel evento;
     private string selectedIngresso;
-    private bool podeAtividades;
+    private bool jaInscrito;
     
     private async Task RegistrarEvento()
     {
@@ -81,12 +81,17 @@ else
         
         if (response.IsSuccessStatusCode )
         {
-            podeAtividades = true;
+            jaInscrito = true;
         }
     }
     
     private async Task RegistrarAtividade(Guid atividadeId)
     {
+        var inscrito = await VerificarInscricaoAtividade(atividadeId, Guid.Parse(_tokenClaims["idUtilizador"]));
+        
+        if(inscrito)
+            return;
+        
         var model = new CreateInscricaoAtividadeModel()
         {
             IdParticipante = Guid.Parse(_tokenClaims["idUtilizador"]),
@@ -137,7 +142,7 @@ else
             NavigationManager?.NavigateTo("/login");
         }
         await HandleEvento();
-        podeAtividades = await VerificarInscricaoEvento(Guid.Parse(Id), Guid.Parse(_tokenClaims["idUtilizador"]));
+        jaInscrito = await VerificarInscricaoEvento(Guid.Parse(Id), Guid.Parse(_tokenClaims["idUtilizador"]));
     }
 
     private async Task<bool> VerificarInscricaoEvento(Guid idEvento, Guid idParticipante)
@@ -145,6 +150,12 @@ else
         var response = await Http.GetAsync($"http://localhost:5052/api/InscricaoEvento/CheckInscricao/{idEvento}/{idParticipante}");
         return response.IsSuccessStatusCode && await response.Content.ReadFromJsonAsync<bool>();
     }
+    
+    private async Task<bool> VerificarInscricaoAtividade(Guid idAtividade, Guid idParticipante)
+    {
+        var response = await Http.GetAsync($"http://localhost:5052/api/InscricaoAtividade/CheckAtividade/{idAtividade}/{idParticipante}");
+        return response.IsSuccessStatusCode && await response.Content.ReadFromJsonAsync<bool>();
+    } 
 }
 
 <style>
