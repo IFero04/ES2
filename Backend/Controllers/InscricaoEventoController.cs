@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using BusinessLogic.Context;
 using BusinessLogic.Entities;
 using BusinessLogic.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Backend.Controllers
 {
@@ -42,26 +46,19 @@ namespace Backend.Controllers
 
             return model;
         }
-        
+
         // GET: api/InscricaoEvento
         [HttpGet]
         public async Task<ActionResult<IEnumerable<InscricaoEvento>>> GetInscricaoEventos()
         {
-          if (_context.InscricaoEventos == null)
-          {
-              return NotFound();
-          }
-            return await _context.InscricaoEventos.ToListAsync();
+            var inscricaoEventos = await _context.InscricaoEventos.ToListAsync();
+            return inscricaoEventos;
         }
 
         // GET: api/InscricaoEvento/5
         [HttpGet("{id}")]
         public async Task<ActionResult<InscricaoEvento>> GetInscricaoEvento(Guid id)
         {
-          if (_context.InscricaoEventos == null)
-          {
-              return NotFound();
-          }
             var inscricaoEvento = await _context.InscricaoEventos.FindAsync(id);
 
             if (inscricaoEvento == null)
@@ -71,14 +68,19 @@ namespace Backend.Controllers
 
             return inscricaoEvento;
         }
-        
-        // GET: api/InscricaoEvento/CheckInscricao/{idEvento}/{idParticipante}
-        [HttpGet("CheckInscricao/{idEvento}/{idParticipante}")]
-        public async Task<ActionResult<bool>> CheckInscricao(Guid idEvento, Guid idParticipante)
+
+        // GET: api/InscricaoEvento/GetByEventoParticipante/{idEvento}/{idParticipante}
+        [HttpGet("GetByEventoParticipante/{idEvento}/{idParticipante}")]
+        public async Task<ActionResult<InscricaoEvento>> GetByEventoParticipante(Guid idEvento, Guid idParticipante)
         {
             var inscricaoEvento = await _context.InscricaoEventos.FirstOrDefaultAsync(i => i.IdEvento == idEvento && i.IdParticipante == idParticipante);
 
-            return inscricaoEvento != null;
+            if (inscricaoEvento == null)
+            {
+                return NotFound();
+            }
+
+            return inscricaoEvento;
         }
 
         // PUT: api/InscricaoEvento/5
@@ -123,7 +125,7 @@ namespace Backend.Controllers
                 IdParticipante = model.IdParticipante,
                 TipoIngresso = model.TipoIngresso
             };
-            
+
             _context.InscricaoEventos.Add(inscricaoEvento);
             await _context.SaveChangesAsync();
 
@@ -134,10 +136,6 @@ namespace Backend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteInscricaoEvento(Guid id)
         {
-            if (_context.InscricaoEventos == null)
-            {
-                return NotFound();
-            }
             var inscricaoEvento = await _context.InscricaoEventos.FindAsync(id);
             if (inscricaoEvento == null)
             {
@@ -150,9 +148,17 @@ namespace Backend.Controllers
             return NoContent();
         }
 
+        [HttpGet("CheckInscricao/{idEvento}/{idParticipante}")]
+        public async Task<ActionResult<bool>> CheckInscricao(Guid idEvento, Guid idParticipante)
+        {
+            var inscricaoEvento = await _context.InscricaoEventos.FirstOrDefaultAsync(i => i.IdEvento == idEvento && i.IdParticipante == idParticipante);
+
+            return inscricaoEvento != null;
+        }
+        
         private bool InscricaoEventoExists(Guid id)
         {
-            return (_context.InscricaoEventos?.Any(e => e.Id == id)).GetValueOrDefault();
+            return _context.InscricaoEventos.Any(e => e.Id == id);
         }
     }
 }
