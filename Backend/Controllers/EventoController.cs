@@ -101,6 +101,56 @@ namespace Backend.Controllers
 
             return eventoDetails;
         }
+        
+        [HttpGet("organizador/{idOrganizador}")]
+        public async Task<ActionResult<IEnumerable<EventoDetailsModel>>> GetEventosPorOrganizador(Guid idOrganizador)
+        {
+            var eventos = await _context.Eventos
+                .Include(e => e.Atividades)
+                .Include(e => e.Ingressos)
+                .Include(e => e.IdOrganizadorNavigation)
+                .Where(e => e.IdOrganizadorNavigation.Id == idOrganizador)
+                .ToListAsync();
+
+            if (eventos == null || eventos.Count == 0)
+            {
+                return NotFound();
+            }
+
+            var eventosDetalhe = eventos.Select(evento => new EventoDetailsModel
+            {
+                Id = evento.Id,
+                Nome = evento.Nome,
+                Data = evento.Data,
+                Hora = evento.Hora,
+                Local = evento.Local,
+                Descricao = evento.Descricao,
+                Categoria = evento.Categoria,
+                Capacidade = evento.Capacidade,
+                Atividades = evento.Atividades.Select(atividade => new AtividadeDetalheModel
+                {
+                    Id = atividade.Id,
+                    Nome = atividade.Nome,
+                    Data = atividade.Data,
+                    Hora = atividade.Hora,
+                    Descricao = atividade.Descricao
+                }).ToList(),
+                Ingressos = evento.Ingressos.Select(ingresso => new IngressoDetalheModel
+                {
+                    Id = ingresso.Id,
+                    Nome = ingresso.Nome,
+                    Preco = ingresso.Preco,
+                    Quantidade = ingresso.Quantidade
+                }).ToList(),
+                Organizador = new UtilizadorDetalheModel
+                {
+                    Nome = evento.IdOrganizadorNavigation.Nome
+                }
+            }).ToList();
+
+            return eventosDetalhe;
+        }
+
 
 
         // PUT: api/Evento/5
