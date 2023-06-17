@@ -1,4 +1,9 @@
 ﻿@page "/"
+@using System.ComponentModel.DataAnnotations
+@using System.IdentityModel.Tokens.Jwt
+@using BusinessLogic.Models
+@inject HttpClient Http
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
 <PageTitle>Index</PageTitle>
 
@@ -10,12 +15,68 @@ Welcome to your new app.
 
 <button class="btn btn-primary" @onclick="ViewUserData">Ver Dados do Usuário</button>
 
-@code {
-    [Inject]
-    private NavigationManager NavigationManager { get; set; }
-
-    private void ViewUserData()
+@if (_tokenClaims == null)
+{
+    <p>
+        <em>A carregar Token...</em>
+    </p>
+}
+else
+{
+    if (role == "Organizador")
     {
-        NavigationManager.NavigateTo("/userdata");
+        <h2>Bem-vindo, @name!</h2>
+        <button class="btn btn-primary" @onclick="GoToEventosOrganizador">Ver Meus Eventos</button>
+    }
+    if (role == "Participante")
+    {
+        <h2>Bem-vindo, @name!</h2>
     }
 }
+
+
+
+
+
+@code {
+    public string role;
+    public string name;
+    
+    private void ViewUserData()
+    {
+        NavigationManager?.NavigateTo("/userdata");
+    }
+    private void GoToEventosOrganizador()
+    {
+        NavigationManager?.NavigateTo($"/eventos/{_tokenClaims["idUtilizador"]}");
+    }
+    
+    [Inject]
+    private NavigationManager? NavigationManager { get; set; }
+    private Dictionary<string, string> _tokenClaims = new Dictionary<string, string>();
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            var jwtHandler = new JwtSecurityTokenHandler();
+            var decodedToken = jwtHandler.ReadJwtToken(token);
+
+            _tokenClaims = decodedToken.Claims.ToDictionary(c => c.Type, c => c.Value);
+            
+            if (_tokenClaims["role"] != "Participante" && _tokenClaims["role"] != "Organizador")
+            {
+                NavigationManager?.NavigateTo("/login");
+            }
+            
+            role = _tokenClaims["role"];
+            name = _tokenClaims["unique_name"];
+        }
+        else
+        {
+            NavigationManager?.NavigateTo("/login");
+        }
+    }
+}
+
