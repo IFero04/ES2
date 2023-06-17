@@ -31,6 +31,7 @@ else
     if (role == "Participante")
     {
         <h2>Bem-vindo, @name!</h2>
+        <button class="btn btn-primary" @onclick="GoToEventosPaticipante">Ver Eventos</button>
     }
 }
 
@@ -49,6 +50,10 @@ else
     private void GoToEventosOrganizador()
     {
         NavigationManager?.NavigateTo($"/eventos/{_tokenClaims["idUtilizador"]}");
+    }
+    private void GoToEventosPaticipante()
+    {
+        NavigationManager?.NavigateTo($"/ver-eventos-participante");
     }
     
     [Inject]
