@@ -1,0 +1,132 @@
+﻿@page "/eventos-inscritos/{idParticipante}"
+@using System.ComponentModel.DataAnnotations
+@using System.IdentityModel.Tokens.Jwt
+@using BusinessLogic.Models
+@inject HttpClient Http
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+
+<h3>VerEventosParticipante</h3>
+
+<div class="search-bar">
+    <input type="text" @bind="searchTerm" placeholder="Pesquisar por nome, local, data ou categoria" />
+    <button @onclick="FilterEventos">Pesquisar</button>
+</div>
+
+@if (eventos == null)
+{
+    <p>
+        <em>Sem Eventos...</em>
+    </p>
+}
+else
+{
+    <div class="eventos-container">
+        @foreach (var evento in eventosFiltrados)
+        {
+            <div class="evento-card">
+                <h4>@evento.Nome</h4>
+                <p>Data: @evento.Data.ToShortDateString()</p>
+                <p>Hora: @evento.Hora</p>
+                <p>Local: @evento.Local</p>
+                <p>Categoria: @evento.Categoria</p>
+                <p>Capacidade: @evento.Capacidade</p>
+                <p>Organizador: @evento.NomeOrganizador</p>
+                <p>Número de Atividades: @evento.NumeroAtidades</p>
+                <p>Ingresso Comprado: @evento.Ingressos.FirstOrDefault()?.Preco</p>
+                <button class="btn-acessar-evento" @onclick="() => AcessarEvento(evento)">Acessar Evento</button>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string idParticipante { get; set; }
+    
+    List<EventoDetailsModel> eventos = new List<EventoDetailsModel>();
+    List<EventoDetailsModel> eventosFiltrados = new List<EventoDetailsModel>();
+    
+    private string searchTerm;
+
+    private async Task HandleGetEventos()
+    {
+        var inscricoes = await Http.GetFromJsonAsync<GetInscricaoEvento>($"http://localhost:5052/api/InscricaoEvento/GetEventosInscritos/{Guid.Parse(idParticipante)}");
+        for (int i = 0; i < inscricoes.IdEventos.Count; i++)
+        {
+            var temp = await Http.GetFromJsonAsync<EventoDetailsModel>($"http://localhost:5052/api/Evento/Detalhe/{inscricoes.IdEventos[i]}");
+            if (temp != null)
+            {
+                foreach (var ingresso in inscricoes.Ingressos)
+                {
+                    temp.Ingressos.Add(ingresso);
+                }
+                eventos?.Add(temp);
+            }
+        }
+        
+        eventosFiltrados = eventos;
+    }
+    
+    private void AcessarEvento(EventoDetailsModel eventoDetails)
+    {
+        NavigationManager?.NavigateTo($"/evento-detalhes/{eventoDetails.Id}");
+    }
+
+    private void FilterEventos()
+    {
+        eventosFiltrados = eventos;
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            eventosFiltrados = eventos.Where(e =>
+                e.Nome.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                e.Local.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                e.Data.ToShortDateString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                e.Categoria.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+    }
+
+    [Inject]
+    private NavigationManager? NavigationManager { get; set; }
+    private Dictionary<string, string> _tokenClaims = new Dictionary<string, string>();
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            var jwtHandler = new JwtSecurityTokenHandler();
+            var decodedToken = jwtHandler.ReadJwtToken(token);
+
+            _tokenClaims = decodedToken.Claims.ToDictionary(c => c.Type, c => c.Value);
+
+            if (_tokenClaims["role"] != "Participante")
+            {
+                NavigationManager?.NavigateTo("/");
+            }
+        }
+
+        await HandleGetEventos();
+    }
+}
+
+<style>
+    .eventos-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .evento-card {
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+
+    .btn-acessar-evento {
+        margin-top: 10px;
+    }
+
+    .search-bar {
+        margin-bottom: 20px;
+    }
+</style>
