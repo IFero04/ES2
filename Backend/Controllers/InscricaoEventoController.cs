@@ -17,6 +17,32 @@ namespace Backend.Controllers
             _context = context;
         }
 
+        [HttpGet("GetEventosInscritos/{idParticipante}")]
+        public async Task<ActionResult<GetInscricaoEvento>> GetEventosInscritos(Guid idParticipante)
+        {
+            var inscricoes = await _context.InscricaoEventos
+                .Include(i => i.IdEventoNavigation)
+                .Include(i => i.TipoIngressoNavigation)
+                .Where(i => i.IdParticipante == idParticipante)
+                .ToListAsync();
+
+            var idEventos = inscricoes.Select(i => i.IdEvento).ToList();
+            var ingressos = inscricoes.Select(i => new IngressoDetalheModel
+            {
+                Id = i.TipoIngressoNavigation.Id,
+                Nome = i.TipoIngressoNavigation.Nome,
+                Preco = i.TipoIngressoNavigation.Preco
+            }).ToList();
+
+            var model = new GetInscricaoEvento()
+            {
+                IdEventos = idEventos,
+                Ingressos = ingressos
+            };
+
+            return model;
+        }
+        
         // GET: api/InscricaoEvento
         [HttpGet]
         public async Task<ActionResult<IEnumerable<InscricaoEvento>>> GetInscricaoEventos()
