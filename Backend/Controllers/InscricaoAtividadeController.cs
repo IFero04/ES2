@@ -17,6 +17,20 @@ namespace Backend.Controllers
             _context = context;
         }
 
+        
+        [HttpGet("ByAtividade/{idAtividade}")]
+        public async Task<ActionResult<InscricaoAtividade>> GetInscricaoByAtividaed(Guid idAtividade)
+        {
+            var inscricaoAtividade = await _context.InscricaoAtividades.FirstOrDefaultAsync(i => i.IdAtividade == idAtividade);
+
+            if (inscricaoAtividade == null)
+            {
+                return NotFound();
+            }
+
+            return inscricaoAtividade;
+        }
+        
         // GET: api/IncricaoAtividade
         [HttpGet]
         public async Task<ActionResult<IEnumerable<InscricaoAtividade>>> GetInscricaoAtividades()
