@@ -2,7 +2,6 @@
 @using System.IdentityModel.Tokens.Jwt
 @using BusinessLogic.Models
 @using BusinessLogic.Services
-@inject HttpClient Http
 @inject IEventoService ServiceEvento
 @inject IJSRuntime JsRuntime
 
@@ -22,7 +21,7 @@
 else
 {
     <div class="eventos-container">
-        @foreach (var evento in _eventosFiltrados)
+        @foreach (var evento in _eventosFiltrados!)
         {
             <div class="evento-card">
                 <h4>@evento.Nome</h4>
