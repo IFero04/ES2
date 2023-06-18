@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using BusinessLogic.Context;
 using BusinessLogic.Entities;
 using BusinessLogic.Models;
+using Frontend.Pages.Organizador;
 
 namespace Backend.Controllers
 {
@@ -70,18 +71,17 @@ namespace Backend.Controllers
 
             return atividade;
         }
-
-        // PUT: api/Atividade/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutAtividade(Guid id, Atividade atividade)
+        
+        //PUT
+        [HttpPut("{idAtividade}")]
+        public async Task<IActionResult> PutAtividade(Guid idAtividade, Atividade atividadeUpdate)
         {
-            if (id != atividade.Id)
+            if (idAtividade != atividadeUpdate.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(atividade).State = EntityState.Modified;
+            _context.Entry(atividadeUpdate).State = EntityState.Modified;
 
             try
             {
@@ -89,7 +89,39 @@ namespace Backend.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!AtividadeExists(id))
+                if (!AtividadeExists(idAtividade))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+            
+            var atividade = await _context.Atividades.FindAsync(idAtividade);
+
+            if (atividade == null)
+            {
+                return NotFound();
+            }
+
+            atividade.Nome = atividadeUpdate.Nome;
+            atividade.Data = atividadeUpdate.Data;
+            atividade.Hora = atividadeUpdate.Hora;
+            atividade.Descricao = atividadeUpdate.Descricao;
+            atividade.IdEventoNavigation = atividade.IdEventoNavigation;
+            
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AtividadeExists(idAtividade))
                 {
                     return NotFound();
                 }

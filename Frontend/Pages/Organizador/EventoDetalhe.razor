@@ -1,6 +1,7 @@
 ﻿@page "/detalhes-evento/{id}"
 @using BusinessLogic.Models
 @using BusinessLogic.Services
+@using BusinessLogic.Entities
 @inject HttpClient Http
 @inject IAtividadeService ServiceAtividade
 @inject IEventoService ServiceEvento
@@ -112,7 +113,7 @@ else
 
     private void EditarAtividade(Guid idAtividade)
     {
-        NavigationManager.NavigateTo($"/EditarAtividade/{idAtividade}");
+        NavigationManager.NavigateTo($"/EditarAtividade/{idAtividade.ToString()}");
     }
 
     private void EditarEvento()
