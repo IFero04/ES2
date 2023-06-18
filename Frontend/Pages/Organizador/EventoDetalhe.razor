@@ -1,11 +1,7 @@
 ﻿@page "/detalhes-evento/{id}"
-@using System.ComponentModel.DataAnnotations
-@using System.IdentityModel.Tokens.Jwt
-@using BusinessLogic.Entities
 @using BusinessLogic.Models
 @using BusinessLogic.Services
 @inject HttpClient Http
-@inject Microsoft.JSInterop.IJSRuntime JSRuntime
 @inject IAtividadeService ServiceAtividade
 @inject NavigationManager NavigationManager
 
@@ -41,7 +37,6 @@ else
                 <li>@atividade.Data</li>
                 <li>@atividade.Hora</li>
                 <li>@atividade.Descricao</li>
-                <li>Participantes Inscritos: @atividade.ParticipantesInscritos</li>
                 <button @onclick="() => ListarParticipantes(atividade.Id)">Listar Participantes</button>
                 <button @onclick="() => EditarAtividade(atividade.Id)">Editar Atividade</button>
                 <button @onclick="() => RemoverAtividade(atividade.Id)">Remover Atividade</button>
@@ -56,6 +51,8 @@ else
     }
 
     <button @onclick="() => AdicionarAtividade(evento.Id)">Adicionar Atividade</button>
+    
+    
     <h4>Ingressos do Evento</h4>
     @if (evento.Ingressos != null && evento.Ingressos.Any())
     {
@@ -99,12 +96,12 @@ else
 
     private void AdicionarAtividade(Guid idEvento)
     {
-        NavigationManager.NavigateTo($"/AdicionarAtividade/{idEvento}");
+        NavigationManager.NavigateTo($"/criar-atividade/{idEvento}");
     }
 
     private async Task RemoverAtividade(Guid idAtividade)
     {
-        await ServiceAtividade.RemoverAtividade(idAtividade);
+        //await ServiceAtividade.RemoverAtividade(idAtividade);
 
         var idPGuid = Guid.Parse(Id);
         evento = await Http.GetFromJsonAsync<EventoDetailsModel>($"http://localhost:5052/api/Evento/Detalhe/{idPGuid}");

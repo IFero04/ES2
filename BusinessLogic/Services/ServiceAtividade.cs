@@ -52,8 +52,8 @@ public class ServiceAtividade : IAtividadeService
 
     public async Task<bool> CriarAtividade(CreateAtividadeModel model)
     {
-        
+        var response = await _httpClient.PostAsJsonAsync("http://localhost:5052/api/Atividade", model);
 
-        return false;
+        return response.IsSuccessStatusCode;
     }
 }

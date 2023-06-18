@@ -3,7 +3,7 @@
 @using System.IdentityModel.Tokens.Jwt
 @using BusinessLogic.Models
 @inject HttpClient Http
-@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+@inject IJSRuntime JsRuntime
 
 <h3>Criar Evento</h3>
 
@@ -259,7 +259,7 @@
         [Required(ErrorMessage = "Location is required.")]
         public string Local { get; set; } = null!;
 
-        public string Descricao { get; set; }
+        public string? Descricao { get; set; }
         
         [Required(ErrorMessage = "Categoria is required.")]
         public string Categoria { get; set; } = null!;
@@ -295,7 +295,7 @@
     private Dictionary<string, string> _tokenClaims = new Dictionary<string, string>();
     protected override async Task OnInitializedAsync()
     {
-        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+        var token = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "token");
 
         if (!string.IsNullOrEmpty(token))
         {

@@ -105,7 +105,7 @@ namespace Backend.Controllers
         // POST: api/Atividade
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Atividade>> PostAtividade(CreateAtividadeModel model, Guid idEvento)
+        public async Task<ActionResult<Atividade>> PostAtividade(CreateAtividadeModel model)
         {
             var atividade = new Atividade()
             {
@@ -113,7 +113,7 @@ namespace Backend.Controllers
                 Data = model.Data,
                 Hora = model.Hora,
                 Descricao = model.Descricao,
-                IdEvento = idEvento
+                IdEvento = model.IdEvento
             };
 
             _context.Atividades.Add(atividade);

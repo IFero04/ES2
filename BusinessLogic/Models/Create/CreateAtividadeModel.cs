@@ -6,4 +6,5 @@ public class CreateAtividadeModel
     public DateOnly Data { get; set; }
     public string Hora { get; set; } = null!;
     public string? Descricao { get; set; }
+    public Guid IdEvento { get; set; }
 }

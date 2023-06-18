@@ -1,0 +1,106 @@
+﻿@page "/criar-atividade/{idEvento}"
+@using System.IdentityModel.Tokens.Jwt
+@using BusinessLogic.Models
+@using BusinessLogic.Services
+@using System.ComponentModel.DataAnnotations
+@inject IAtividadeService ServiceAtividade
+@inject IJSRuntime JsRuntime
+
+<h3>Criar Atividade</h3>
+
+
+<EditForm Model="@_registarAtividade" OnValidSubmit="@HandleCreateAtividade">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="name">Nome do Evento:</label>
+        <InputText id="name" @bind-Value="@_registarAtividade.Nome" class="form-control" />
+        <ValidationMessage For="@(() => _registarAtividade.Nome)" />
+    </div>
+
+    <div class="form-group">
+        <label for="dateTime">Data e Hora:</label>
+        <input type="datetime-local" id="dateTime" @bind="_registarAtividade.DataTime" class="form-control" />
+        <ValidationMessage For="@(() => _registarAtividade.DataTime)" />
+    </div>
+    
+
+    <div class="form-group">
+        <label for="description">Descrição:</label>
+        <InputTextArea id="description" @bind-Value="@_registarAtividade.Descricao" class="form-control" />
+        <ValidationMessage For="@(() => _registarAtividade.Descricao)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Criar Atividade</button>
+    
+    @if (!string.IsNullOrEmpty(_registarAtividade.ErrorMessage))
+    {
+        <p class="text-danger">@_registarAtividade.ErrorMessage</p>
+    }
+</EditForm>
+
+@code {
+    [Parameter]
+    public string? IdEvento { get; set; }
+    
+    private readonly RegistarAtividade _registarAtividade = new RegistarAtividade();
+
+    private async Task HandleCreateAtividade()
+    {
+        _registarAtividade.ErrorMessage = String.Empty;
+
+        var createAtividadeModel = new CreateAtividadeModel()
+        {
+            Nome = _registarAtividade.Nome, 
+            Data = DateOnly.FromDateTime(_registarAtividade.DataTime),
+            Hora = TimeOnly.FromDateTime(_registarAtividade.DataTime).ToString(),
+            Descricao = _registarAtividade.Descricao,
+            IdEvento = Guid.Parse(IdEvento!)
+        };
+
+        bool criado = await ServiceAtividade.CriarAtividade(createAtividadeModel);
+
+        if (criado) NavigationManager?.NavigateTo($"/detalhes-evento/{IdEvento}");
+        
+        else _registarAtividade.ErrorMessage = "An error occurred while creating the event.";
+    }
+    
+    [Inject]
+    private NavigationManager? NavigationManager { get; set; }
+    private Dictionary<string, string> _tokenClaims = new Dictionary<string, string>();
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            var jwtHandler = new JwtSecurityTokenHandler();
+            var decodedToken = jwtHandler.ReadJwtToken(token);
+
+            _tokenClaims = decodedToken.Claims.ToDictionary(c => c.Type, c => c.Value);
+            
+            if (_tokenClaims["role"] != "Organizador")
+            {
+                NavigationManager?.NavigateTo("/");
+            }
+        }
+        else
+        {
+            NavigationManager?.NavigateTo("/");
+        }
+    }
+    
+    public class RegistarAtividade
+    {
+        [Required(ErrorMessage = "Event name is required.")]
+        public string Nome { get; set; } = null!;
+
+        [Required(ErrorMessage = "Date is required.")]
+        public DateTime DataTime { get; set; }
+        
+        public string? Descricao { get; set; }
+
+        public string ErrorMessage { get; set; } = String.Empty;
+    }
+}
