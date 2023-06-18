@@ -1,0 +1,63 @@
+﻿@page "/AdicionarAtividade/{idEvento}"
+@using BusinessLogic.Entities
+@using BusinessLogic.Models
+@using BusinessLogic.Services
+@inject IAtividadeService ServiceAtividade
+@inject NavigationManager NavigationManager
+
+<h1>Adicionar Atividade</h1>
+
+<form method="post" onsubmit="AdicionarAtividade">
+    <div>
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="Nome" @bind="model.Nome" />
+    </div>
+    <div>
+        <label for="data">Data:</label>
+        <input type="date" id="data" name="Data" @bind="model.Data" />
+    </div>
+    <div>
+        <label for="hora">Hora:</label>
+        <input type="time" id="hora" name="Hora" @bind="model.Hora" />
+    </div>
+    <div>
+        <label for="descricao">Descrição:</label>
+        <textarea id="descricao" name="Descricao" @bind="model.Descricao"></textarea>
+    </div>
+    <button type="submit">Adicionar</button>
+</form>
+
+@code {
+    private CreateAtividadeModel model { get; set; } = new CreateAtividadeModel();
+
+    private async Task AdicionarAtividadeAsync()
+    {
+        if (string.IsNullOrEmpty(model.Nome) || string.IsNullOrEmpty(model.Hora))
+        {
+            return;
+        }
+        
+        
+        if (model != null && !DateTime.TryParse(model.Data, out DateTime data))
+        {
+    
+            return;
+        }
+
+        var atividade = new CreateAtividadeModel()
+        {
+            Nome = model.Nome,
+            Data = model.Data,
+            Hora = model.Hora,
+            Descricao = model.Descricao,
+        };
+
+        bool sucesso = await ServiceAtividade.CriarAtividade(atividade);
+
+        if (sucesso)
+        {
+            model = new CreateAtividadeModel();
+            NavigationManager.NavigateTo($"/detalhes-evento/{atividade.IdEvento}");
+        }
+    }
+}

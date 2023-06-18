@@ -123,7 +123,7 @@ namespace Backend.Controllers
             {
                 IdEvento = model.IdEvento,
                 IdParticipante = model.IdParticipante,
-                TipoIngresso = model.TipoIngresso
+                TipoIngresso = model.TipoIngresso,
             };
 
             _context.InscricaoEventos.Add(inscricaoEvento);

@@ -12,13 +12,14 @@ public interface IEventoService
 {
     Task<EventoDetailsModel[]?> GetEventos(); 
     Task<EventoDetailsModel?> GetDetalhesEvento(Guid idEvento);
+    
 }
 
 
 public class ServiceEvento : IEventoService
 {
     private readonly HttpClient _httpClient;
-
+   
     public ServiceEvento(HttpClient httpClient)
     {
         _httpClient = httpClient;
@@ -41,4 +42,5 @@ public class ServiceEvento : IEventoService
 
         return null;
     }
+    
 }

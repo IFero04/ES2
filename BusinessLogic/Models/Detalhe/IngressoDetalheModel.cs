@@ -9,4 +9,6 @@ public class IngressoDetalheModel
     public double Preco { get; set; }
 
     public int Quantidade { get; set; }
+
+    public int IngressosComprados { get; set;}
 }

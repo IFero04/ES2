@@ -8,6 +8,7 @@ public interface IAtividadeService
     Task<bool> VerificarAtividadeByEvento(Guid idEvento);
     Task<AtividadeDetalheModel[]?> GetAtividadeByEvento(Guid idEvento);
     Task<Guid[]?> GetAtividadeIdByEvento(Guid idEvento);
+    Task<bool> CriarAtividade(CreateAtividadeModel model);
 }
 
 public class ServiceAtividade : IAtividadeService
@@ -47,5 +48,12 @@ public class ServiceAtividade : IAtividadeService
         var response = await GetAtividadeByEvento(idEvento);
 
         return response?.Select(r => r.Id).ToArray();
+    }
+
+    public async Task<bool> CriarAtividade(CreateAtividadeModel model)
+    {
+        
+
+        return false;
     }
 }

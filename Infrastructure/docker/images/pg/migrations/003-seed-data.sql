@@ -9,7 +9,7 @@ VALUES
 INSERT INTO evento (nome, data, hora, local, descricao, categoria, capacidade, id_organizador)
 VALUES
     ('Concerto de Rock', '2023-07-10', '20:00', 'Teatro Municipal', 'Um concerto emocionante de rock com várias bandas locais.', 'Música', 500, (SELECT id FROM public.utilizador WHERE username = 'af')),
-    ('Feira de Artesanato', '2023-06-25', '14:00', 'Praça Central', 'Uma feira com diversos artesãos expondo suas obras.', 'Artesanato', 200, (SELECT id FROM public.utilizador WHERE username = 'so'));
+    ('Feira de Artesanato', '2023-06-25', '14:00', 'Praça Central', 'Uma feira com diversos artesãos expondo suas obras.', 'Artesanato', 200, (SELECT id FROM public.utilizador WHERE username = 'af'));
 
 -- Inserção na tabela 'ingresso'
 INSERT INTO ingresso (nome, preco, quantidade, id_evento)

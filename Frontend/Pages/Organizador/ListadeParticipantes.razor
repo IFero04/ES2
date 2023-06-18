@@ -1,0 +1,60 @@
+﻿@page "/lista-participantes/{id}"
+@using System.ComponentModel.DataAnnotations
+@using BusinessLogic.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h3>Lista de Participantes</h3>
+
+@if (atividade == null)
+{
+    <p>
+        <em>Atividade não encontrada...</em>
+    </p>
+}
+else
+{
+    <h4>@atividade.Nome</h4>
+    <p>Data: @atividade.Data</p>
+    <p>Hora: @atividade.Hora</p>
+
+    @if (atividade. != null && atividade.Participantes.Any())
+    {
+        <ul>
+            @foreach (var participante in atividade.Participantes)
+            {
+                <li>@participante.Nome</li>
+                <li>@participante.Email</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>
+            <em>Nenhum participante inscrito nesta atividade.</em>
+        </p>
+    }
+
+    <button @onclick="Voltar">Voltar</button>
+}
+
+@code {
+    private AtividadeDetalheModel atividade;
+
+    [Parameter]
+    public string Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(Id))
+        {
+            var idPGuid = Guid.Parse(Id);
+            atividade = await Http.GetFromJsonAsync<AtividadeDetalheModel>($"http://localhost:5052/api/Atividade/Detalhe/{idPGuid}");
+        }
+    }
+
+    private void Voltar()
+    {
+        if (atividade != null) NavigationManager.NavigateTo($"/detalhes-evento/{atividade.EventoId}");
+    }
+}

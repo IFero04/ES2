@@ -1,0 +1,132 @@
+﻿@page "/detalhes-evento/{id}"
+@using System.ComponentModel.DataAnnotations
+@using System.IdentityModel.Tokens.Jwt
+@using BusinessLogic.Entities
+@using BusinessLogic.Models
+@using BusinessLogic.Services
+@inject HttpClient Http
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+@inject IAtividadeService ServiceAtividade
+@inject NavigationManager NavigationManager
+
+<h3>Detalhes do Evento (Organizador)</h3>
+
+@if (evento == null)
+{
+    <p>
+        <em>Evento não encontrado... @Id</em>
+    </p>
+}
+else
+{
+    <div class="evento-details">
+        <h4>@evento.Nome</h4>
+        <p>Data: @evento.Data.ToShortDateString()</p>
+        <p>Hora: @evento.Hora</p>
+        <p>Local: @evento.Local</p>
+        <p>Categoria: @evento.Categoria</p>
+        <p>Capacidade: @evento.Capacidade</p>
+        <p>Número de Atividades: @evento.NumeroAtidades</p>
+        <p>Ingresso Barato: @evento.IngressoBarato</p>
+        <p>Participantes Inscritos: @evento.ParticipantesInscritos</p>
+    </div>
+
+    <h4>Atividades do Evento</h4>
+    @if (evento.Atividades != null && evento.Atividades.Any())
+    {
+        <ul>
+            @foreach (var atividade in evento.Atividades)
+            {
+                <h5>@atividade.Nome</h5>
+                <li>@atividade.Data</li>
+                <li>@atividade.Hora</li>
+                <li>@atividade.Descricao</li>
+                <li>Participantes Inscritos: @atividade.ParticipantesInscritos</li>
+                <button @onclick="() => ListarParticipantes(atividade.Id)">Listar Participantes</button>
+                <button @onclick="() => EditarAtividade(atividade.Id)">Editar Atividade</button>
+                <button @onclick="() => RemoverAtividade(atividade.Id)">Remover Atividade</button>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>
+            <em>Nenhuma atividade encontrada para este evento.</em>
+        </p>
+    }
+
+    <button @onclick="() => AdicionarAtividade(evento.Id)">Adicionar Atividade</button>
+    <h4>Ingressos do Evento</h4>
+    @if (evento.Ingressos != null && evento.Ingressos.Any())
+    {
+        <ul>
+            @foreach (var ingresso in evento.Ingressos)
+            {
+                <h5>@ingresso.Nome</h5>
+                <li>Preço: @ingresso.Preco</li>
+                <li>Quantidade: @ingresso.Quantidade</li>
+                <li>Ingressos Comprados: @ingresso.IngressosComprados</li>
+                <p></p>
+            }
+        </ul>
+    }
+
+    <button @onclick="EditarEvento">Editar Evento</button>
+    <button @onclick="RemoverEvento">Remover Evento</button>
+}
+
+<style>
+    .evento-details {
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+</style>
+
+@code {
+    private EventoDetailsModel evento;
+
+    [Parameter]
+    public string Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(Id))
+        {
+            var idPGuid = Guid.Parse(Id);
+            evento = await Http.GetFromJsonAsync<EventoDetailsModel>($"http://localhost:5052/api/Evento/Detalhe/{idPGuid}");
+        }
+    }
+
+    private void AdicionarAtividade(Guid idEvento)
+    {
+        NavigationManager.NavigateTo($"/AdicionarAtividade/{idEvento}");
+    }
+
+    private async Task RemoverAtividade(Guid idAtividade)
+    {
+        await ServiceAtividade.RemoverAtividade(idAtividade);
+
+        var idPGuid = Guid.Parse(Id);
+        evento = await Http.GetFromJsonAsync<EventoDetailsModel>($"http://localhost:5052/api/Evento/Detalhe/{idPGuid}");
+    }
+
+    private void EditarAtividade(Guid idAtividade)
+    {
+        NavigationManager.NavigateTo($"/EditarAtividade/{idAtividade}");
+    }
+
+    private void EditarEvento()
+    {
+        NavigationManager.NavigateTo($"/EditarEvento/{Id}");
+    }
+
+    private void RemoverEvento()
+    {
+        NavigationManager.NavigateTo($"/RemoverEvento/{Id}");
+    }
+
+    private void ListarParticipantes(Guid idAtividade)
+    {
+        NavigationManager.NavigateTo($"/ListarParticipantes/{idAtividade}");
+    }
+}

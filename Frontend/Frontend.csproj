@@ -20,6 +20,7 @@
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+      <Content Remove="Pages\Organizador\ListadeParticipantes.razor" />
     </ItemGroup>
 
     <ItemGroup>
@@ -34,6 +35,10 @@
 
     <ItemGroup>
       <Compile Remove="Pages\VerEventosOrganizador.cs" />
+      <Compile Remove="Pages\Organizador\EventoDetalhe.cs" />
+      <Compile Remove="Pages\Organizador\Criar Atividade.cs" />
+      <Compile Remove="Pages\Organizador\CriarAtividade.cs" />
+      <Compile Remove="Pages\Organizador\AdicionarAtividade.cs" />
     </ItemGroup>
 
 </Project>

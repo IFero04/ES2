@@ -27,6 +27,7 @@ else
                 <p>Capacidade: @evento.Capacidade</p>
                 <p>Número de Atividades: @evento.NumeroAtidades</p>
                 <p>Ingresso Barato: @evento.IngressoBarato</p>
+                <p>Participantes Inscritos: @evento.ParticipantesInscritos</p>
                 <button class="btn-acessar-evento" @onclick="() => AcessarEvento(evento)">Acessar Evento</button>
             </div>
         }
@@ -74,7 +75,7 @@ else
     private void AcessarEvento(EventoDetailsModel eventoDetails)
     {
         // Redirecionar para a página de detalhes do evento com base no ID do evento
-        NavigationManager?.NavigateTo($"/evento-detalhes/{eventoDetails.Id}");
+        NavigationManager?.NavigateTo($"/detalhes-evento/{eventoDetails.Id}");
     }
 }
 

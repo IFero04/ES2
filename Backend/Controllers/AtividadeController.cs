@@ -126,10 +126,6 @@ namespace Backend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAtividade(Guid id)
         {
-            if (_context.Atividades == null)
-            {
-                return NotFound();
-            }
             var atividade = await _context.Atividades.FindAsync(id);
             if (atividade == null)
             {
@@ -141,6 +137,7 @@ namespace Backend.Controllers
 
             return NoContent();
         }
+        
 
         private bool AtividadeExists(Guid id)
         {
