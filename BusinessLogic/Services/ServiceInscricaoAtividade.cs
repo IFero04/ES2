@@ -13,8 +13,8 @@ public interface IInscricaoAtividadeService
     Task<InscricaoAtividade?> GetInscricaoByAtividadeParticipante(Guid idAtividade, Guid idParticipante);
     Task<Guid?> GetInscricaoByAtividadeParticipanteId(Guid idAtividade, Guid idParticipante);
     Task<bool> VerificarInscricaoByAtividade(Guid idAtividade);
-    Task<InscricaoAtividade?> GetInscricaoByAtividade(Guid idAtividade);
-    Task<Guid?> GetInscricaoByAtividadeID(Guid idAtividade);
+    Task<InscricaoAtividade[]?> GetInscricaoByAtividade(Guid idAtividade);
+    Task<Guid[]?> GetInscricaoByAtividadeId(Guid idAtividade);
 }
 
 public class ServiceInscricaoAtividade : IInscricaoAtividadeService
@@ -85,7 +85,7 @@ public class ServiceInscricaoAtividade : IInscricaoAtividadeService
         return false;
     }
 
-    public async Task<InscricaoAtividade?> GetInscricaoByAtividade(Guid idAtividade)
+    public async Task<InscricaoAtividade[]?> GetInscricaoByAtividade(Guid idAtividade)
     {
         try
         {
@@ -93,8 +93,8 @@ public class ServiceInscricaoAtividade : IInscricaoAtividadeService
             {
                 var response = await _httpClient.GetAsync($"http://localhost:5052/api/IncricaoAtividade/ByAtividade/{idAtividade}");
 
-                if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<InscricaoAtividade>();
-
+                if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<InscricaoAtividade[]>();
+                
                 return null;
             }
 
@@ -106,10 +106,10 @@ public class ServiceInscricaoAtividade : IInscricaoAtividadeService
         }
     }
 
-    public async Task<Guid?> GetInscricaoByAtividadeID(Guid idAtividade)
+    public async Task<Guid[]?> GetInscricaoByAtividadeId(Guid idAtividade)
     {
         var inscricaoAtividade = await GetInscricaoByAtividade(idAtividade);
-
-        return inscricaoAtividade?.Id;
+        
+        return inscricaoAtividade?.Select(i => i.Id).ToArray();
     }
 }
