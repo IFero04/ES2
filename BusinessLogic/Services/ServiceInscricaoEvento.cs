@@ -13,6 +13,7 @@ namespace BusinessLogic.Services
         Task<InscricaoEvento?> GetInscricaoByEventoParticipante(Guid idEvento, Guid idParticipante);
         Task<Guid?> GetInscricaoByEventoParticipanteId(Guid idEvento, Guid idParticipante);
         Task<bool> VerificarInscricaoEvento(Guid idEvento, Guid idParticipante);
+        Task<GetInscricaoEvento?> GetEventosInscrito(Guid idParticipante);
     }
 
     public class ServiceInscricaoEvento : IInscricaoService
@@ -85,6 +86,15 @@ namespace BusinessLogic.Services
             var response = await _httpClient.GetAsync($"http://localhost:5052/api/InscricaoEvento/CheckInscricao/{idEvento}/{idParticipante}");
             
             return response.IsSuccessStatusCode;
+        }
+
+        public async Task<GetInscricaoEvento?> GetEventosInscrito(Guid idParticipante)
+        {
+            var response = await _httpClient.GetAsync($"http://localhost:5052/api/InscricaoEvento/GetEventosInscritos/{idParticipante}");
+            
+            if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<GetInscricaoEvento>();
+
+            return null;
         }
     }
 }

@@ -1,21 +1,21 @@
 ﻿@page "/eventos-inscritos/{idParticipante}"
-@using System.ComponentModel.DataAnnotations
 @using System.IdentityModel.Tokens.Jwt
 @using BusinessLogic.Models
 @using BusinessLogic.Services
-@inject HttpClient Http
 @inject IInscricaoService ServiceInscricaoEvento
-@inject IFeedbackService ServiceFeedback
-@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+@inject IEventoService ServiceEvento
+@inject IJSRuntime JsRuntime
+@inject HttpClient Http
+
 
 <h3>VerEventosParticipante</h3>
 
 <div class="search-bar">
-    <input type="text" @bind="searchTerm" placeholder="Pesquisar por nome, local, data ou categoria" />
+    <input type="text" @bind="_searchTerm" placeholder="Pesquisar por nome, local, data ou categoria" />
     <button @onclick="FilterEventos">Pesquisar</button>
 </div>
 
-@if (eventos == null)
+@if (_eventos == null)
 {
     <p>
         <em>Sem Eventos...</em>
@@ -24,7 +24,7 @@
 else
 {
     <div class="eventos-container">
-        @foreach (var evento in eventosFiltrados)
+        @foreach (var evento in _eventosFiltrados!)
         {
             <div class="evento-card">
                 <h4>@evento.Nome</h4>
@@ -35,7 +35,7 @@ else
                 <p>Capacidade: @evento.Capacidade</p>
                 <p>Organizador: @evento.NomeOrganizador</p>
                 <p>Número de Atividades: @evento.NumeroAtidades</p>
-                <p>Ingresso Comprado: @evento.Ingressos.FirstOrDefault()?.Preco</p>
+                <p>Ingresso Comprado: @evento.Ingressos!.FirstOrDefault()?.Preco</p>
                 <button class="btn btn-primary" @onclick="() => AcessarEvento(evento)">Acessar Evento</button>
                 <button class="btn btn-danger" @onclick="() => RemoverInscricaoEvento(evento)">Remover Evento</button>
             </div>
@@ -45,12 +45,12 @@ else
 
 @code {
     [Parameter]
-    public string idParticipante { get; set; }
+    public string? IdParticipante { get; set; }
     
-    List<EventoDetailsModel> eventos = new List<EventoDetailsModel>();
-    List<EventoDetailsModel> eventosFiltrados = new List<EventoDetailsModel>();
-    
-    private string searchTerm;
+    List<EventoDetailsModel>? _eventos = new List<EventoDetailsModel>();
+    List<EventoDetailsModel>? _eventosFiltrados = new List<EventoDetailsModel>();
+
+    private string? _searchTerm;
 
     private async Task RemoverInscricaoEvento(EventoDetailsModel eventoDetails)
     {
@@ -60,12 +60,11 @@ else
             bool removido = await ServiceInscricaoEvento.RemoverInscricao(id.Value);
             if (removido)
             {
-                eventos.Remove(eventoDetails);
-                eventosFiltrados.Remove(eventoDetails);
+                _eventos!.Remove(eventoDetails);
+                _eventosFiltrados!.Remove(eventoDetails);
             }
         }
     }
-
     
     private void AcessarEvento(EventoDetailsModel eventoDetails)
     {
@@ -74,34 +73,41 @@ else
     
     private async Task HandleGetEventos()
     {
-        var inscricoes = await Http.GetFromJsonAsync<GetInscricaoEvento>($"http://localhost:5052/api/InscricaoEvento/GetEventosInscritos/{Guid.Parse(idParticipante)}");
-        for (int i = 0; i < inscricoes.IdEventos.Count; i++)
+        var inscricoes = await ServiceInscricaoEvento.GetEventosInscrito(Guid.Parse(IdParticipante!));
+
+        if (inscricoes != null)
         {
-            var temp = await Http.GetFromJsonAsync<EventoDetailsModel>($"http://localhost:5052/api/Evento/Detalhe/{inscricoes.IdEventos[i]}");
-            if (temp != null)
+            for (int i = 0; i < inscricoes.IdEventos!.Count; i++)
             {
-                foreach (var ingresso in inscricoes.Ingressos)
+                var temp = await ServiceEvento.GetDetalhesEvento(inscricoes.IdEventos[i]);
+                if (temp != null)
                 {
-                    temp.Ingressos.Add(ingresso);
+                    foreach (var ingresso in inscricoes.Ingressos!)
+                    {
+                        temp.Ingressos!.Add(ingresso);
+                    }
+                    _eventos?.Add(temp);
                 }
-                eventos?.Add(temp);
             }
-        }
         
-        eventosFiltrados = eventos;
+            _eventosFiltrados = _eventos;
+        }
     }
     
     private void FilterEventos()
     {
-        eventosFiltrados = eventos;
-        if (!string.IsNullOrEmpty(searchTerm))
+        if (_eventos != null)
         {
-            eventosFiltrados = eventos.Where(e =>
-                e.Nome.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                e.Local.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                e.Data.ToShortDateString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                e.Categoria.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-            ).ToList();
+            _eventosFiltrados = _eventos;
+            if (!string.IsNullOrEmpty(_searchTerm))
+            {
+                _eventosFiltrados = _eventos.Where(e =>
+                    e.Nome.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    e.Local.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    e.Data.ToShortDateString().Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    e.Categoria!.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)
+                    ).ToList();
+            }
         }
     }
 
@@ -110,7 +116,7 @@ else
     private Dictionary<string, string> _tokenClaims = new Dictionary<string, string>();
     protected override async Task OnInitializedAsync()
     {
-        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+        var token = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "token");
 
         if (!string.IsNullOrEmpty(token))
         {
