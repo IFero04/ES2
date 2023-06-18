@@ -1,0 +1,102 @@
+﻿@page "/EditarAtividade/{idAtividade}"
+@using System.ComponentModel.DataAnnotations
+@using System.IdentityModel.Tokens.Jwt
+@using BusinessLogic.Entities
+@using BusinessLogic.Services
+@using Microsoft.AspNetCore.Components
+@inject IAtividadeService ServiceAtividade
+@inject HttpClient Http
+
+<h3>EditarAtividade</h3>
+
+<EditForm Model="@_editarAtividade" OnValidSubmit="@HandleEditarAtividade">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="name">Nome do Evento:</label>
+        <InputText id="name" @bind-Value="@_editarAtividade.Nome" class="form-control" />
+        <ValidationMessage For="@(() => _editarAtividade.Nome)" />
+    </div>
+
+    <div class="form-group">
+        <label for="dateTime">Data e Hora:</label>
+        <input type="datetime-local" id="dateTime" @bind="_editarAtividade.DataTime" class="form-control" />
+        <ValidationMessage For="@(() => _editarAtividade.DataTime)" />
+    </div>
+    
+
+    <div class="form-group">
+        <label for="description">Descrição:</label>
+        <InputTextArea id="description" @bind-Value="@_editarAtividade.Descricao" class="form-control" />
+        <ValidationMessage For="@(() => _editarAtividade.Descricao)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Criar Atividade</button>
+    
+    @if (!string.IsNullOrEmpty(_editarAtividade.ErrorMessage))
+    {
+        <p class="text-danger">@_editarAtividade.ErrorMessage</p>
+    }
+</EditForm>
+@code {
+    private EditarAtividadeModel _editarAtividade = new EditarAtividadeModel();
+    
+    [Parameter]
+    public string? IdAtividade { get; set; }
+
+    private async Task HandleEditarAtividade()
+    {
+        _editarAtividade.ErrorMessage = String.Empty;
+        _editarAtividade.IdAtividade = IdAtividade;
+        
+            var atividade = new Atividade()
+            {
+                Nome = _editarAtividade.Nome,
+                Data = DateOnly.FromDateTime(_editarAtividade.DataTime),
+                Hora = TimeOnly.FromDateTime(_editarAtividade.DataTime).ToString(),
+                Descricao = _editarAtividade.Descricao,
+               
+            };
+        bool response = await ServiceAtividade.EditarAtividade(Guid.Parse(IdAtividade), atividade);
+        
+        if (response)
+        {
+            NavigationManager?.NavigateTo($"/");
+        }
+        else
+        {
+            _editarAtividade.ErrorMessage = "An error occurred during registration. Please try again later.";
+        }
+    }
+    
+    [Inject]
+    private NavigationManager? NavigationManager { get; set; }
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; }
+    
+    public class EditarAtividadeModel
+    {
+        public string? IdAtividade { get; set; }
+        
+        public EditarAtividadeModel()
+        {
+            DataTime = DateTime.Now;
+        }
+        
+        private DateTime _dataTime;
+        
+        [Required(ErrorMessage = "Event name is required.")]
+        public string Nome { get; set; } = null!;
+
+        [Required(ErrorMessage = "Date is required.")]
+        public DateTime DataTime { 
+            get { return _dataTime; }
+            set { _dataTime = value; } }
+        
+        public string? Descricao { get; set; }
+
+        public string ErrorMessage { get; set; } = String.Empty;
+    }
+
+}
