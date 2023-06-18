@@ -10,6 +10,7 @@ using BusinessLogic.Entities;
 
 public interface IEventoService
 {
+    Task<EventoDetailsModel[]?> GetEventos(); 
     Task<EventoDetailsModel?> GetDetalhesEvento(Guid idEvento);
 }
 
@@ -23,6 +24,15 @@ public class ServiceEvento : IEventoService
         _httpClient = httpClient;
     }
 
+    public async Task<EventoDetailsModel[]?> GetEventos()
+    {
+        var response = await _httpClient.GetAsync("http://localhost:5052/api/Evento");
+
+        if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<EventoDetailsModel[]>();
+
+        return null;
+    }
+    
     public async Task<EventoDetailsModel?> GetDetalhesEvento(Guid idEvento)
     {
         var response = await _httpClient.GetAsync($"http://localhost:5052/api/Evento/Detalhe/{idEvento}");
