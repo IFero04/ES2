@@ -1,0 +1,136 @@
+﻿@page "/EditarInfo"
+@using System.ComponentModel.DataAnnotations
+@using System.IdentityModel.Tokens.Jwt
+@using BusinessLogic.Entities
+@using BusinessLogic.Services
+@using Microsoft.AspNetCore.Components
+@inject IUtilizadorService ServiceUtilizador
+
+<h3>Editar Dados Pessoais</h3>
+
+<EditForm Model="@_editarInfo" OnValidSubmit="@HandleEditarInfo">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="name">Nome:</label>
+        <InputText id="name" class="form-control" @bind-Value="@_editarInfo.Name" />
+        <ValidationMessage For="@(() => _editarInfo.Name)" />
+    </div>
+    
+    <div class="form-group">
+        <label for="username">Nome de Utilizador:</label>
+        <InputText id="username" class="form-control" @bind-Value="@_editarInfo.Username" />
+        <ValidationMessage For="@(() => _editarInfo.Username)" />
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <InputText id="email" class="form-control" @bind-Value="@_editarInfo.Email" />
+        <ValidationMessage For="@(() => _editarInfo.Email)" />
+    </div>
+
+    <div class="form-group">
+        <label for="password">Palavra-Chave:</label>
+        <InputText id="password" class="form-control" @bind-Value="@_editarInfo.Password" type="password"/>
+        <ValidationMessage For="@(() => _editarInfo.Password)" />
+    </div>
+
+    <div class="form-group">
+        <label for="phone">Telemóvel:</label>
+        <InputText id="phone" class="form-control" @bind-Value="@_editarInfo.Phone" />
+        <ValidationMessage For="@(() => _editarInfo.Phone)" />
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Editar</button>
+
+    @if (!string.IsNullOrEmpty(_editarInfo.ErrorMessage))
+    {
+        <p class="text-danger">@_editarInfo.ErrorMessage</p>
+    }
+</EditForm>
+
+@code {
+    private EditarInfoModel _editarInfo = new EditarInfoModel();
+
+    private async Task HandleEditarInfo()
+    {
+        _editarInfo.ErrorMessage = String.Empty;
+
+        var utilizador = new Utilizador()
+        {
+            Nome = _editarInfo.Name,
+            Email = _editarInfo.Email,
+            Username = _editarInfo.Username,
+            Senha = _editarInfo.Password,
+            Telefone = string.IsNullOrEmpty(_editarInfo.Phone) ? null : _editarInfo.Phone,
+            Id = Guid.Parse(_tokenClaims["idUtilizador"])
+
+        };
+
+        bool response = await ServiceUtilizador.EditarInfo(Guid.Parse(_tokenClaims["idUtilizador"]), utilizador);
+        
+        if (response)
+        {
+            NavigationManager?.NavigateTo("/");
+        }
+        else
+        {
+            _editarInfo.ErrorMessage = "An error occurred during registration. Please try again later.";
+        }
+    }
+    
+    [Inject]
+    private NavigationManager? NavigationManager { get; set; }
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; }
+
+    private Dictionary<string, string> _tokenClaims = new Dictionary<string, string>();
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            var jwtHandler = new JwtSecurityTokenHandler();
+            var decodedToken = jwtHandler.ReadJwtToken(token);
+
+            _tokenClaims = decodedToken.Claims.ToDictionary(c => c.Type, c => c.Value);
+
+            if (_tokenClaims["role"] != "Participante" && _tokenClaims["role"] != "Organizador" )
+            {
+                NavigationManager?.NavigateTo("/");
+            }
+        }
+
+        Utilizador getUtilizador = await ServiceUtilizador.GetUtilizadorById(Guid.Parse(_tokenClaims["idUtilizador"]));
+        _editarInfo = new EditarInfoModel()
+        {
+            Name = getUtilizador.Nome,
+            Username = getUtilizador.Username,
+            Email = getUtilizador.Email,
+            Password = getUtilizador.Senha,
+            Phone = getUtilizador.Telefone
+        };
+    }
+    
+    public class EditarInfoModel
+    {
+        [Required(ErrorMessage = "Name is required.")]
+        public string Name { get; set; } = null!;
+
+        [Required(ErrorMessage = "Username is required.")]
+        public string Username { get; set; } = null!;
+
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email.")]
+        public string Email { get; set; } = null!;
+
+        [Required(ErrorMessage = "Password is required.")]
+        public string Password { get; set; } = null!;
+
+        public string? Phone { get; set; }
+        
+        public string ErrorMessage { get; set; } = null!;
+    }
+}

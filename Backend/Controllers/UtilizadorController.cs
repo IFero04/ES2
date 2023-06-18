@@ -52,17 +52,30 @@ namespace Backend.Controllers
             return utilizador;
         }
         
-        // PUT: api/Utilizador/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+// PUT: api/Utilizador/5
+// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUtilizador(Guid id, Utilizador utilizador)
+        public async Task<IActionResult> PutUtilizador(Guid id, UpdateUtilizadorModel model)
         {
-            if (id != utilizador.Id)
+            if (id != id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(utilizador).State = EntityState.Modified;
+            // Carregar o utilizador existente do banco de dados
+            var utilizador = await _context.Utilizadors.FindAsync(id);
+
+            if (utilizador == null)
+            {
+                return NotFound();
+            }
+
+            // Atualizar as propriedades permitidas
+            utilizador.Nome = model.Nome;
+            utilizador.Email = model.Email;
+            utilizador.Username = model.Username;
+            utilizador.Senha = model.Senha;
+            utilizador.Telefone = model.Telefone;
 
             try
             {
@@ -82,6 +95,8 @@ namespace Backend.Controllers
 
             return NoContent();
         }
+
+
 
         // POST: api/Utilizador
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -135,5 +150,14 @@ namespace Backend.Controllers
         {
             return (_context.Utilizadors?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+    }
+
+    public class UpdateUtilizadorModel
+    {
+        public string Nome { get; set; }
+        public string Email { get; set; }
+        public string Username { get; set; }
+        public string Senha { get; set; }
+        public string Telefone { get; set; }
     }
 }

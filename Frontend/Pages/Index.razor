@@ -36,6 +36,7 @@ else
         <h2>Bem-vindo, @name!</h2>
         <button class="btn btn-primary" @onclick="GoToEventosPaticipante">Ver Eventos</button>
         <button class="btn btn-primary" @onclick="GoToEventosInscritos">Ver Inscrições</button>
+        <button class="btn btn-primary" @onclick="GoToEditarInfo">Editar Dados Pessoais</button>
     }
 }
 
@@ -70,6 +71,11 @@ else
     private void GoToCriarEventos()
     {
         NavigationManager?.NavigateTo($"/criar-evento");
+    }
+
+    private void GoToEditarInfo()
+    {
+        NavigationManager?.NavigateTo($"/EditarInfo");
     }
 
     [Inject]
