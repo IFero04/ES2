@@ -145,6 +145,17 @@
 
     private async Task HandleCreateEvent()
     {
+        if (_registarEvento.DataTime < DateTime.Now)
+        {
+            _registarEvento.ErrorMessage = "A data tem que ser maior que hoje";
+            return;
+        }
+
+        if (_registarEvento.Capacidade <= 0)
+        {
+            _registarEvento.ErrorMessage = "A capacidade tem que ser maior que 0";
+            return;
+        }
         if (ValidateTickets())
         {
             _registarEvento.ErrorMessage = String.Empty;
@@ -250,11 +261,22 @@
 
     public class RegistarEvento
     {
+        public RegistarEvento()
+        {
+            DataTime = DateTime.Now;
+        }
+        
+        private DateTime _dataTime;
+
         [Required(ErrorMessage = "Event name is required.")]
         public string Nome { get; set; } = null!;
 
         [Required(ErrorMessage = "Date is required.")]
-        public DateTime DataTime { get; set; }
+        public DateTime DataTime
+        {
+            get { return _dataTime; }
+            set { _dataTime = value; }
+        }
 
         [Required(ErrorMessage = "Location is required.")]
         public string Local { get; set; } = null!;

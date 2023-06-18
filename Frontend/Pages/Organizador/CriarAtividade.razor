@@ -5,6 +5,7 @@
 @using System.ComponentModel.DataAnnotations
 @inject IAtividadeService ServiceAtividade
 @inject IJSRuntime JsRuntime
+@inject ServiceEvento _eventoService
 
 <h3>Criar Atividade</h3>
 
@@ -41,14 +42,38 @@
 </EditForm>
 
 @code {
+
     [Parameter]
     public string? IdEvento { get; set; }
-    
+
     private readonly RegistarAtividade _registarAtividade = new RegistarAtividade();
 
     private async Task HandleCreateAtividade()
     {
         _registarAtividade.ErrorMessage = String.Empty;
+        
+        EventoDetailsModel? eventoDetails = await _eventoService.GetDetalhesEvento(Guid.Parse(IdEvento!));
+
+        if (eventoDetails == null)
+        {
+            _registarAtividade.ErrorMessage = "Failed to retrieve event details.";
+            return;
+        }
+
+        DateTime eventoDateTime = eventoDetails.Data.ToDateTime(TimeOnly.FromDateTime(DateTime.Now)); 
+
+        if (_registarAtividade.DataTime < eventoDateTime)
+        {
+            _registarAtividade.ErrorMessage = "A data deve ser igual ou superior à data do evento.";
+            return;
+        }
+        
+        if (_registarAtividade.DataTime < DateTime.Now)
+        {
+            _registarAtividade.ErrorMessage = "A data tem que ser maior que hoje";
+            return;
+        }
+        
 
         var createAtividadeModel = new CreateAtividadeModel()
         {
@@ -61,9 +86,14 @@
 
         bool criado = await ServiceAtividade.CriarAtividade(createAtividadeModel);
 
-        if (criado) NavigationManager?.NavigateTo($"/detalhes-evento/{IdEvento}");
-        
-        else _registarAtividade.ErrorMessage = "An error occurred while creating the event.";
+        if (criado)
+        {
+            NavigationManager?.NavigateTo($"/detalhes-evento/{IdEvento}");
+        }
+        else
+        {
+            _registarAtividade.ErrorMessage = "An error occurred while creating the event.";
+        }
     }
     
     [Inject]
@@ -91,16 +121,28 @@
         }
     }
     
-    public class RegistarAtividade
+    public class RegistarAtividade 
     {
+
+        public RegistarAtividade()
+        {
+            DataTime = DateTime.Now;
+        }
+        
+        private DateTime _dataTime;
+        
         [Required(ErrorMessage = "Event name is required.")]
         public string Nome { get; set; } = null!;
 
         [Required(ErrorMessage = "Date is required.")]
-        public DateTime DataTime { get; set; }
+        public DateTime DataTime { 
+            get { return _dataTime; }
+            set { _dataTime = value; } }
         
         public string? Descricao { get; set; }
 
         public string ErrorMessage { get; set; } = String.Empty;
     }
+    
+    
 }
