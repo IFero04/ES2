@@ -22,13 +22,15 @@ public class ServiceEvento : IEventoService
     private readonly IAtividadeService _atividadeService;
     private readonly IInscricaoEventoService _inscricaoEventoService;
     private readonly IIngressosService _ingressosService;
+    private readonly IMensagensService _mensagensService;
    
-    public ServiceEvento(HttpClient httpClient, IAtividadeService atividadeService, IInscricaoEventoService inscricaoEventoService, IIngressosService ingressosService)
+    public ServiceEvento(HttpClient httpClient, IAtividadeService atividadeService, IInscricaoEventoService inscricaoEventoService, IIngressosService ingressosService, IMensagensService mensagensService)
     {
         _httpClient = httpClient;
         _atividadeService = atividadeService;
         _inscricaoEventoService = inscricaoEventoService;
         _ingressosService = ingressosService;
+        _mensagensService = mensagensService;
     }
 
     public async Task<EventoDetailsModel[]?> GetEventos()
@@ -62,8 +64,6 @@ public class ServiceEvento : IEventoService
             }
         }
         
-        Console.WriteLine("Passo1");
-        
         List<Guid>? idIncricoes = await _inscricaoEventoService.GetInscricaoIdByEvento(idEvento);
 
         if (idIncricoes != null && idIncricoes.Count > 0)
@@ -75,8 +75,6 @@ public class ServiceEvento : IEventoService
             }
         }
         
-        Console.WriteLine("Passo2");
-        
         List<Guid>? idIngressos = await _ingressosService.GetIngressoIdByEvento(idEvento);
         
         if (idIngressos != null && idIngressos.Count > 0)
@@ -87,9 +85,18 @@ public class ServiceEvento : IEventoService
                 if (!check) return false;
             }
         }
-        
-        Console.WriteLine("Passo3");
-        
+
+        List<Guid>? idMensagens = await _mensagensService.GetMensagensIdByEvento(idEvento);
+
+        if (idMensagens != null && idMensagens.Count > 0)
+        {
+            foreach (var id in idMensagens)
+            {
+                bool check = await _mensagensService.RemoverMensagem(id);
+                if (!check) return false;
+            }
+        }
+
         var eventoRemovido = await _httpClient.DeleteAsync($"http://localhost:5052/api/Evento/{idEvento}");
                 
         return eventoRemovido.IsSuccessStatusCode;
