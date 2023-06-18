@@ -10,6 +10,7 @@ namespace BusinessLogic.Services;
 public interface IFeedbackService
 {
     Task<bool> RemoverFeedback(Guid id);
+    Task<bool> VerificarFeedbackByInscricao(Guid idInscricao);
     Task<Feedback?> GetFeedbackByInscricao(Guid idInscricao);
     Task<Guid?> GetFeedbackByInscricaoId(Guid idInscricao);
 }
@@ -56,12 +57,7 @@ public class ServiceFeedback : IFeedbackService
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var feedback = await response.Content.ReadFromJsonAsync<Feedback>();
-                    return feedback;
-                }
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    return null;
+                    return await response.Content.ReadFromJsonAsync<Feedback>();
                 }
 
                 return null;

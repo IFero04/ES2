@@ -11,4 +11,6 @@ public class AtividadeDetalheModel
     public string Hora { get; set; } = null!;
 
     public string? Descricao { get; set; }
+    
+    public bool Inscrito { get; set; } = false;
 }

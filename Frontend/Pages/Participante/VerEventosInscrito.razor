@@ -5,8 +5,6 @@
 @inject IInscricaoEventoService ServiceInscricaoEvento
 @inject IEventoService ServiceEvento
 @inject IJSRuntime JsRuntime
-@inject HttpClient Http
-
 
 <h3>VerEventosParticipante</h3>
 
@@ -57,7 +55,7 @@ else
         Guid? id = await ServiceInscricaoEvento.GetInscricaoByEventoParticipanteId(eventoDetails.Id, Guid.Parse(_tokenClaims["idUtilizador"]));
         if (id != null)
         {
-            bool removido = await ServiceInscricaoEvento.RemoverInscricao(id.Value);
+            bool removido = await ServiceInscricaoEvento.RemoverInscricao(id.Value, eventoDetails.Id, Guid.Parse(_tokenClaims["idUtilizador"]));
             if (removido)
             {
                 _eventos!.Remove(eventoDetails);
@@ -77,14 +75,14 @@ else
 
         if (inscricoes != null)
         {
-            for (int i = 0; i < inscricoes.IdEventos.Count; i++)
+            for (int i = 0; i < inscricoes.IdEventos!.Count; i++)
             {
                 var temp = await ServiceEvento.GetDetalhesEvento(inscricoes.IdEventos[i]);
                 if (temp != null)
                 {
-                    foreach (var ingresso in inscricoes.Ingressos)
+                    foreach (var ingresso in inscricoes.Ingressos!)
                     {
-                        temp.Ingressos.Add(ingresso);
+                        temp.Ingressos!.Add(ingresso);
                     }
                     _eventos?.Add(temp);
                 }

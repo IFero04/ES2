@@ -9,7 +9,7 @@ namespace BusinessLogic.Services
     public interface IInscricaoEventoService
     {
         Task<bool> Inscrever(CreateInscricaoEventoModel model);
-        Task<bool> RemoverInscricao(Guid id);
+        Task<bool> RemoverInscricao(Guid idInscricaom, Guid idEvento, Guid idParticipante);
         Task<InscricaoEvento?> GetInscricaoByEventoParticipante(Guid idEvento, Guid idParticipante);
         Task<Guid?> GetInscricaoByEventoParticipanteId(Guid idEvento, Guid idParticipante);
         Task<bool> VerificarInscricaoEvento(Guid idEvento, Guid idParticipante);
@@ -20,11 +20,15 @@ namespace BusinessLogic.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IFeedbackService _feedbackService;
+        private readonly IAtividadeService _atividadesService;
+        private readonly IInscricaoAtividadeService _inscricaoAtividadeService;
         
-        public ServiceInscricaoEvento(HttpClient httpClient, IFeedbackService feedbackService)
+        public ServiceInscricaoEvento(HttpClient httpClient, IFeedbackService feedbackService, IAtividadeService atividadesService, IInscricaoAtividadeService inscricaoAtividadeService)
         {
             _httpClient = httpClient;
             _feedbackService = feedbackService;
+            _atividadesService = atividadesService;
+            _inscricaoAtividadeService = inscricaoAtividadeService;
         }
 
         public async Task<bool> Inscrever(CreateInscricaoEventoModel model)
@@ -34,19 +38,35 @@ namespace BusinessLogic.Services
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<bool> RemoverInscricao(Guid id)
+        public async Task<bool> RemoverInscricao(Guid idInscricao, Guid idEvento, Guid idParticipante)
         {
-            Guid? feedbackId = await _feedbackService.GetFeedbackByInscricaoId(id);
+            Guid? feedbackId = await _feedbackService.GetFeedbackByInscricaoId(idInscricao);
             
             if (feedbackId != null)
             {
-                bool feedbackRemovido = await _feedbackService.RemoverFeedback(feedbackId.Value);
-                if (!feedbackRemovido)
+                bool removido = await _feedbackService.RemoverFeedback(feedbackId.Value);
+                if (!removido)
                     return false;
             }
+
+            Guid[]? atividadesId = await _atividadesService.GetAtividadeIdByEvento(idEvento);
+
+            if (atividadesId != null)
+            {
+                foreach (var idAtividade in atividadesId)
+                {
+                    Guid? idInscricaoAtividade = await _inscricaoAtividadeService.GetInscricaoByAtividadeParticipanteId(idAtividade, idParticipante);
+                    if (idInscricaoAtividade != null)
+                    {
+                        bool removido = await _inscricaoAtividadeService.RemoverInscricao(idInscricaoAtividade.Value);
+                        if (!removido) return false;
+                    }
+                }
+            }
+            
             try
             {
-                var inscricaoRemovida = await _httpClient.DeleteAsync($"http://localhost:5052/api/InscricaoEvento/{id}");
+                var inscricaoRemovida = await _httpClient.DeleteAsync($"http://localhost:5052/api/InscricaoEvento/{idInscricao}");
                 return inscricaoRemovida.IsSuccessStatusCode;
             }
             catch (Exception)
@@ -76,9 +96,9 @@ namespace BusinessLogic.Services
         
         public async Task<Guid?> GetInscricaoByEventoParticipanteId(Guid idEvento, Guid idParticipante)
         {
-            var feedback = await GetInscricaoByEventoParticipante(idEvento, idParticipante);
+            var response = await GetInscricaoByEventoParticipante(idEvento, idParticipante);
 
-            return feedback?.Id;
+            return response?.Id;
         }
         
         public async Task<bool> VerificarInscricaoEvento(Guid idEvento, Guid idParticipante)

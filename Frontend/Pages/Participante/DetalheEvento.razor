@@ -41,9 +41,13 @@ else
                 <li>@atividade.Hora</li>
                 <li>@atividade.Descricao</li>
                 
-                @if (_jaInscrito)
+                @if (_jaInscrito && !atividade.Inscrito)
                 {
-                    <button @onclick="() => RegistrarAtividade(atividade.Id)">Registrar-se na Atividade</button>
+                    <button class="btn btn-primary" @onclick="() => RegistrarAtividade(atividade)">Registrar-se na Atividade</button>
+                } 
+                @if (_jaInscrito && atividade.Inscrito)
+                {
+                    <button class="btn btn-danger" @onclick="() => RemoverInscricaoAtividade(atividade)">Remover-se da Atividade</button>
                 }
             }
         </ul>
@@ -82,13 +86,30 @@ else
     private string? _selectedIngresso;
     private bool _jaInscrito;
     
+    private async Task RemoverInscricaoAtividade(AtividadeDetalheModel atividade)
+    {
+        Guid? id = await ServiceInscricaoAtividade.GetInscricaoByAtividadeParticipanteId(atividade.Id, Guid.Parse(_tokenClaims["idUtilizador"]));
+        if (id != null)
+        {
+            bool removido = await ServiceInscricaoAtividade.RemoverInscricao(id.Value);
+            if (removido) atividade.Inscrito = false;
+        }
+    }
+    
     private async Task RemoverInscricaoEvento(EventoDetailsModel eventoDetails)
     {
         Guid? id = await ServiceInscricaoEvento.GetInscricaoByEventoParticipanteId(eventoDetails.Id, Guid.Parse(_tokenClaims["idUtilizador"]));
         if (id != null)
         {
-            bool removido = await ServiceInscricaoEvento.RemoverInscricao(id.Value);
-            if (removido) _jaInscrito = false;
+            bool removido = await ServiceInscricaoEvento.RemoverInscricao(id.Value, eventoDetails.Id, Guid.Parse(_tokenClaims["idUtilizador"]));
+            if (removido)
+            {
+                _jaInscrito = false;
+                foreach (var atividade in eventoDetails.Atividades)
+                {
+                    atividade.Inscrito = false;
+                }
+            }
         }
     }
     
@@ -109,27 +130,20 @@ else
         if (inscrito) _jaInscrito = true;
     }
     
-    private async Task RegistrarAtividade(Guid atividadeId)
+    private async Task RegistrarAtividade(AtividadeDetalheModel atividade)
     {
         if(!_jaInscrito) return;
-        
-        bool inscrito = await ServiceInscricaoAtividade.VerificarInscricaoAtividade(atividadeId, Guid.Parse(_tokenClaims["idUtilizador"]));
-
-        if (inscrito)
-        {
-            Console.WriteLine("Já Inscrito");
-            return;
-        }
+        if(atividade.Inscrito) return;
 
         var model = new CreateInscricaoAtividadeModel()
         {
             IdParticipante = Guid.Parse(_tokenClaims["idUtilizador"]),
-            IdAtividade = atividadeId
+            IdAtividade = atividade.Id
         };
 
-        inscrito = await ServiceInscricaoAtividade.Inscrever(model);
+        atividade.Inscrito = await ServiceInscricaoAtividade.Inscrever(model);
         
-        if (inscrito) Console.Write("Sucesso");
+        if (atividade.Inscrito) Console.Write("Sucesso");
     }
     
     
@@ -141,6 +155,11 @@ else
         if (!string.IsNullOrEmpty(Id))
         {
             _evento = await ServiceEvento.GetDetalhesEvento(Guid.Parse(Id));
+
+            foreach (var atividade in _evento.Atividades)
+            {
+                atividade.Inscrito = await ServiceInscricaoAtividade.VerificartInscricaoByAtividadeParticipante(atividade.Id, Guid.Parse(_tokenClaims["idUtilizador"]));
+            }
             
             if (_evento == null) NavigationManager?.NavigateTo("/");
         }

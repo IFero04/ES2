@@ -16,7 +16,27 @@ namespace Backend.Controllers
         {
             _context = context;
         }
+        
+        [HttpGet("CheckInscricaoByAtividade/{idAtividade}")]
+        public async Task<ActionResult<bool>> CheckInscricaoByAtividade(Guid idAtividade)
+        {
+            var haveInscricao = await _context.InscricaoAtividades.FirstOrDefaultAsync(i => i.IdAtividade == idAtividade);
 
+            return haveInscricao != null;
+        }
+        
+        [HttpGet("GetByAtividadeParticipante/{idAtividade}/{idParticipante}")]
+        public async Task<ActionResult<InscricaoAtividade>> GetByAtividadeParticipante(Guid idAtividade, Guid idParticipante)
+        {
+            var inscricaoAtividade = await _context.InscricaoAtividades.FirstOrDefaultAsync(i => i.IdAtividade == idAtividade && i.IdParticipante == idParticipante);
+
+            if (inscricaoAtividade == null)
+            {
+                return NotFound();
+            }
+
+            return inscricaoAtividade;
+        }
         
         [HttpGet("ByAtividade/{idAtividade}")]
         public async Task<ActionResult<InscricaoAtividade>> GetInscricaoByAtividaed(Guid idAtividade)
