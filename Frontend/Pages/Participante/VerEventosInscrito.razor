@@ -34,6 +34,7 @@ else
                 <p>Organizador: @evento.NomeOrganizador</p>
                 <p>Número de Atividades: @evento.NumeroAtidades</p>
                 <p>Ingresso Comprado: @evento.Ingressos!.FirstOrDefault()?.Preco</p>
+                <p>Participantes Inscritos: @evento.ParticipantesInscritos</p>
                 <button class="btn btn-primary" @onclick="() => AcessarEvento(evento)">Acessar Evento</button>
                 <button class="btn btn-danger" @onclick="() => RemoverInscricaoEvento(evento)">Remover Evento</button>
             </div>

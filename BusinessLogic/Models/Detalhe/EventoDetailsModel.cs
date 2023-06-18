@@ -42,7 +42,7 @@ public class EventoDetailsModel
             return 0.0;
         }
     }
-    
-    public int ParticipantesInscritos { get; set; }
-   
+
+    public int ParticipantesInscritos => Ingressos?.Count ?? 0;
+
 }
