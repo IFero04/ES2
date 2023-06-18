@@ -2,10 +2,14 @@
 
 public interface IAtividadeService
 {
-    Task<bool> RemoverAtividade(Guid id);
 }
 
 public class ServiceAtividade : IAtividadeService
 {
-    _httpClient = httpClient;
+    private readonly HttpClient _httpClient;
+
+    public ServiceAtividade(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
+    }
 }

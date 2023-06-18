@@ -1,15 +1,15 @@
 ﻿@page "/evento-detalhes/{id}"
-@using System.ComponentModel.DataAnnotations
 @using System.IdentityModel.Tokens.Jwt
 @using BusinessLogic.Models
 @using BusinessLogic.Services
-@inject HttpClient Http
 @inject IInscricaoService ServiceInscricaoEvento
-@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+@inject IInscricaoAtividadeService ServiceInscricaoAtividade
+@inject IEventoService ServiceEvento
+@inject IJSRuntime JsRuntime
 
 <h3>Detalhes do Evento</h3>
 
-@if (evento == null)
+@if (_evento == null)
 {
     <p>
         <em>Evento não encontrado... @Id</em>
@@ -18,28 +18,28 @@
 else
 {
     <div class="evento-details">
-        <h4>@evento.Nome</h4>
-        <p>Data: @evento.Data.ToShortDateString()</p>
-        <p>Hora: @evento.Hora</p>
-        <p>Local: @evento.Local</p>
-        <p>Categoria: @evento.Categoria</p>
-        <p>Capacidade: @evento.Capacidade</p>
-        <p>Número de Atividades: @evento.NumeroAtidades</p>
-        <p>Ingresso Barato: @evento.IngressoBarato</p>
+        <h4>@_evento.Nome</h4>
+        <p>Data: @_evento.Data.ToShortDateString()</p>
+        <p>Hora: @_evento.Hora</p>
+        <p>Local: @_evento.Local</p>
+        <p>Categoria: @_evento.Categoria</p>
+        <p>Capacidade: @_evento.Capacidade</p>
+        <p>Número de Atividades: @_evento.NumeroAtidades</p>
+        <p>Ingresso Barato: @_evento.IngressoBarato</p>
     </div>
 
     <h4>Atividades do Evento</h4>
-    @if (evento.Atividades != null && evento.Atividades.Any())
+    @if (_evento.Atividades != null && _evento.Atividades.Any())
     {
         <ul>
-            @foreach (var atividade in evento.Atividades)
+            @foreach (var atividade in _evento.Atividades)
             {
                 <h5>@atividade.Nome</h5>
                 <li>@atividade.Data</li>
                 <li>@atividade.Hora</li>
                 <li>@atividade.Descricao</li>
                 
-                @if (jaInscrito)
+                @if (_jaInscrito)
                 {
                     <button @onclick="() => RegistrarAtividade(atividade.Id)">Registrar-se na Atividade</button>
                 }
@@ -52,30 +52,33 @@ else
             <em>Nenhuma atividade encontrada para este evento.</em>
         </p>
     }
-    @if (jaInscrito)
+    @if (_jaInscrito)
     {
         <h4>Remover Evento</h4>
-        <button @onclick="() => RemoverInscricaoEvento(evento)" >Remover-se do Evento</button>
+        <button @onclick="() => RemoverInscricaoEvento(_evento)" >Remover-se do Evento</button>
     }
     else
     {
         <h4>Escolha o Ingresso</h4>
-        <select @bind="selectedIngresso">
+        <select @bind="_selectedIngresso">
             <option value="">Selecione um ingresso</option>
-            @foreach (var ingresso in evento.Ingressos)
+            @if (_evento.Ingressos != null)
             {
-                <option value="@ingresso.Id">@ingresso.Nome - @ingresso.Preco</option>
+                foreach (var ingresso in _evento.Ingressos)
+                {
+                    <option value="@ingresso.Id">@ingresso.Nome - @ingresso.Preco</option>
+                }
             }
         </select>
 
-        <button @onclick="RegistrarEvento" disabled="@string.IsNullOrEmpty(selectedIngresso)">Registrar-se no Evento</button>
+        <button @onclick="RegistrarEvento" disabled="@string.IsNullOrEmpty(_selectedIngresso)">Registrar-se no Evento</button>
     }
 }
 
 @code {
-    private EventoDetailsModel evento;
-    private string selectedIngresso;
-    private bool jaInscrito;
+    private EventoDetailsModel? _evento;
+    private string? _selectedIngresso;
+    private bool _jaInscrito;
     
     private async Task RemoverInscricaoEvento(EventoDetailsModel eventoDetails)
     {
@@ -83,69 +86,63 @@ else
         if (id != null)
         {
             bool removido = await ServiceInscricaoEvento.RemoverInscricao(id.Value);
-            if (removido)
-            {
-                jaInscrito = false;;
-            }
+            if (removido) _jaInscrito = false;
         }
     }
     
     private async Task RegistrarEvento()
     {
+        if (_selectedIngresso == null) return;
+        if (Id == null) return;
+        
         var model = new CreateInscricaoEventoModel()
         {
             IdParticipante = Guid.Parse(_tokenClaims["idUtilizador"]),
             IdEvento = Guid.Parse(Id),
-            TipoIngresso = Guid.Parse(selectedIngresso)
+            TipoIngresso = Guid.Parse(_selectedIngresso)
         };
 
-        var response = await Http.PostAsJsonAsync("http://localhost:5052/api/InscricaoEvento", model);
-        
-        if (response.IsSuccessStatusCode )
-        {
-            jaInscrito = true;
-        }
+        bool inscrito = await ServiceInscricaoEvento.Inscrever(model);
+        if (inscrito) _jaInscrito = true;
     }
     
     private async Task RegistrarAtividade(Guid atividadeId)
     {
-        var inscrito = await VerificarInscricaoAtividade(atividadeId, Guid.Parse(_tokenClaims["idUtilizador"]));
+        bool inscrito = await ServiceInscricaoAtividade.VerificarInscricaoAtividade(atividadeId, Guid.Parse(_tokenClaims["idUtilizador"]));
         
-        if(inscrito)
-            return;
-        
+        if(inscrito) return;
+
         var model = new CreateInscricaoAtividadeModel()
         {
             IdParticipante = Guid.Parse(_tokenClaims["idUtilizador"]),
             IdAtividade = atividadeId
         };
+
+        inscrito = await ServiceInscricaoAtividade.Inscrever(model);
         
-        var response = await Http.PostAsJsonAsync("http://localhost:5052/api/InscricaoAtividade", model);
-        
-        if (response.IsSuccessStatusCode )
-        {
-            Console.WriteLine("Sucesso");
-        }
+        if (inscrito) Console.Write("Sucesso");
     }
     
     
     [Parameter]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     protected async Task HandleEvento()
     {
         if (!string.IsNullOrEmpty(Id))
         {
-            var idPGuid = Guid.Parse(Id);
-            evento = await Http.GetFromJsonAsync<EventoDetailsModel>($"http://localhost:5052/api/Evento/Detalhe/{idPGuid}");
+            _evento = await ServiceEvento.GetDetalhesEvento(Guid.Parse(Id));
+            
+            if (_evento == null) NavigationManager?.NavigateTo("/");
         }
     }
+    
     [Inject]
     private NavigationManager? NavigationManager { get; set; }
     private Dictionary<string, string> _tokenClaims = new Dictionary<string, string>();
     protected override async Task OnInitializedAsync()
     {
-        var token = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "token");
+        var token = await JsRuntime.InvokeAsync<string>("localStorage.getItem", "token");
 
         if (!string.IsNullOrEmpty(token))
         {
@@ -163,21 +160,12 @@ else
         {
             NavigationManager?.NavigateTo("/login");
         }
+        
         await HandleEvento();
-        jaInscrito = await VerificarInscricaoEvento(Guid.Parse(Id), Guid.Parse(_tokenClaims["idUtilizador"]));
-    }
 
-    private async Task<bool> VerificarInscricaoEvento(Guid idEvento, Guid idParticipante)
-    {
-        var response = await Http.GetAsync($"http://localhost:5052/api/InscricaoEvento/CheckInscricao/{idEvento}/{idParticipante}");
-        return response.IsSuccessStatusCode && await response.Content.ReadFromJsonAsync<bool>();
+        if (Id != null) _jaInscrito = await ServiceInscricaoAtividade.VerificarInscricaoAtividade(Guid.Parse(Id), Guid.Parse(_tokenClaims["idUtilizador"]));
     }
     
-    private async Task<bool> VerificarInscricaoAtividade(Guid idAtividade, Guid idParticipante)
-    {
-        var response = await Http.GetAsync($"http://localhost:5052/api/InscricaoAtividade/CheckInscricao/{idAtividade}/{idParticipante}");
-        return response.IsSuccessStatusCode && await response.Content.ReadFromJsonAsync<bool>();
-    } 
 }
 
 <style>
