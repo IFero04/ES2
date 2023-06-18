@@ -27,6 +27,7 @@ namespace BusinessLogic.Services
         public async Task<bool> RemoverInscricao(Guid id)
         {
             Guid? feedbackId = await _feedbackService.GetFeedbackByInscricaoId(id);
+            
             if (feedbackId != null)
             {
                 bool feedbackRemovido = await _feedbackService.RemoverFeedback(feedbackId.Value);
