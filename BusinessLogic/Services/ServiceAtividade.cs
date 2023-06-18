@@ -9,15 +9,18 @@ public interface IAtividadeService
     Task<AtividadeDetalheModel[]?> GetAtividadeByEvento(Guid idEvento);
     Task<Guid[]?> GetAtividadeIdByEvento(Guid idEvento);
     Task<bool> CriarAtividade(CreateAtividadeModel model);
+    Task<bool> RemoverAtividade(Guid idAtividade);
 }
 
 public class ServiceAtividade : IAtividadeService
 {
     private readonly HttpClient _httpClient;
+    private readonly IInscricaoAtividadeService _inscricaoAtividadeService;
 
-    public ServiceAtividade(HttpClient httpClient)
+    public ServiceAtividade(HttpClient httpClient, IInscricaoAtividadeService inscricaoAtividadeService)
     {
         _httpClient = httpClient;
+        _inscricaoAtividadeService = inscricaoAtividadeService;
     }
     
     public async Task<bool> VerificarAtividadeByEvento(Guid idEvento)
@@ -55,5 +58,24 @@ public class ServiceAtividade : IAtividadeService
         var response = await _httpClient.PostAsJsonAsync("http://localhost:5052/api/Atividade", model);
 
         return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> RemoverAtividade(Guid idAtividade)
+    {
+        List<Guid>? idInscricoes = await _inscricaoAtividadeService.GetInscricaoByAtividadeId(idAtividade);
+
+        if (idInscricoes != null && idInscricoes.Count() > 0)
+        {
+            foreach (var id in idInscricoes)
+            {
+                bool response = await _inscricaoAtividadeService.RemoverInscricao(id);
+
+                if (!response) return false;
+            }
+        }
+        
+        var eleminado = await _httpClient.DeleteAsync($"http://localhost:5052/api/Atividade/{idAtividade}");
+
+        return eleminado.IsSuccessStatusCode;
     }
 }

@@ -38,14 +38,14 @@ namespace Backend.Controllers
             return inscricaoAtividade;
         }
         
-        [HttpGet("ByAtividade/{idAtividade}")]
-        public async Task<ActionResult<InscricaoAtividade[]>> GetInscricaoByAtividade(Guid idAtividade)
+        [HttpGet("GetInscricaoByAtividade/{idAtividade}")]
+        public async Task<ActionResult<List<InscricaoAtividade>>> GetInscricaoByAtividade(Guid idAtividade)
         {
             var inscricoesAtividade = await _context.InscricaoAtividades
                 .Where(i => i.IdAtividade == idAtividade)
-                .ToArrayAsync();
+                .ToListAsync();
 
-            if (inscricoesAtividade == null || inscricoesAtividade.Length == 0)
+            if (inscricoesAtividade.Count() == 0)
             {
                 return NotFound();
             }

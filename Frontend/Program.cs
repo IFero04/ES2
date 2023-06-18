@@ -10,12 +10,11 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+builder.Services.AddScoped<IAtividadeService, ServiceAtividade>();
 builder.Services.AddScoped<IEventoService, ServiceEvento>();
 builder.Services.AddScoped<IFeedbackService, ServiceFeedback>();
-builder.Services.AddScoped<IInscricaoEventoService, ServiceInscricaoEvento>();
 builder.Services.AddScoped<IInscricaoAtividadeService, ServiceInscricaoAtividade>();
-builder.Services.AddScoped<IAtividadeService, ServiceAtividade>();
-builder.Services.AddScoped<IUtilizadorService, ServiceUtilizador>();
+builder.Services.AddScoped<IInscricaoEventoService, ServiceInscricaoEvento>();
 
 
 await builder.Build().RunAsync();

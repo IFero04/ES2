@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Net.Http.Json;
 using BusinessLogic.Entities;
 using BusinessLogic.Models;
@@ -13,8 +14,8 @@ public interface IInscricaoAtividadeService
     Task<InscricaoAtividade?> GetInscricaoByAtividadeParticipante(Guid idAtividade, Guid idParticipante);
     Task<Guid?> GetInscricaoByAtividadeParticipanteId(Guid idAtividade, Guid idParticipante);
     Task<bool> VerificarInscricaoByAtividade(Guid idAtividade);
-    Task<InscricaoAtividade[]?> GetInscricaoByAtividade(Guid idAtividade);
-    Task<Guid[]?> GetInscricaoByAtividadeId(Guid idAtividade);
+    Task<List<InscricaoAtividade>?> GetInscricaoByAtividade(Guid idAtividade);
+    Task<List<Guid>?> GetInscricaoByAtividadeId(Guid idAtividade);
 }
 
 public class ServiceInscricaoAtividade : IInscricaoAtividadeService
@@ -78,38 +79,32 @@ public class ServiceInscricaoAtividade : IInscricaoAtividadeService
     
     public async Task<bool> VerificarInscricaoByAtividade(Guid idAtividade)
     {
-        var response = await _httpClient.GetAsync($"http://localhost:5052/api/IncricaoAtividade/CheckInscricaoByAtividade/{idAtividade}");
-            
+        var response = await _httpClient.GetAsync($"http://localhost:5052/api/InscricaoAtividade/CheckInscricaoByAtividade/{idAtividade}");
+        
         if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<bool>();
 
         return false;
     }
 
-    public async Task<InscricaoAtividade[]?> GetInscricaoByAtividade(Guid idAtividade)
+    public async Task<List<InscricaoAtividade>?> GetInscricaoByAtividade(Guid idAtividade)
     {
-        try
+        if (await VerificarInscricaoByAtividade(idAtividade))
         {
-            if (await VerificarInscricaoByAtividade(idAtividade))
-            {
-                var response = await _httpClient.GetAsync($"http://localhost:5052/api/IncricaoAtividade/ByAtividade/{idAtividade}");
+            var response = await _httpClient.GetAsync($"http://localhost:5052/api/InscricaoAtividade/GetInscricaoByAtividade/{idAtividade}");
 
-                if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<InscricaoAtividade[]>();
-                
-                return null;
-            }
-
+            if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<List<InscricaoAtividade>>();
+            
             return null;
         }
-        catch (Exception)
-        {
-            return null;
-        }
+
+        return null;
     }
 
-    public async Task<Guid[]?> GetInscricaoByAtividadeId(Guid idAtividade)
+
+    public async Task<List<Guid>?> GetInscricaoByAtividadeId(Guid idAtividade)
     {
         var inscricaoAtividade = await GetInscricaoByAtividade(idAtividade);
         
-        return inscricaoAtividade?.Select(i => i.Id).ToArray();
+        return inscricaoAtividade?.Select(i => i.Id).ToList();
     }
 }

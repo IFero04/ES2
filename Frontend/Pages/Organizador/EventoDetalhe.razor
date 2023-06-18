@@ -7,7 +7,7 @@
 
 <h3>Detalhes do Evento (Organizador)</h3>
 
-@if (evento == null)
+@if (_evento == null)
 {
     <p>
         <em>Evento não encontrado... @Id</em>
@@ -16,32 +16,34 @@
 else
 {
     <div class="evento-details">
-        <h4>@evento.Nome</h4>
-        <p>Data: @evento.Data.ToShortDateString()</p>
-        <p>Hora: @evento.Hora</p>
-        <p>Local: @evento.Local</p>
-        <p>Categoria: @evento.Categoria</p>
-        <p>Capacidade: @evento.Capacidade</p>
-        <p>Número de Atividades: @evento.NumeroAtidades</p>
-        <p>Ingresso Barato: @evento.IngressoBarato</p>
-        <p>Participantes Inscritos: @evento.ParticipantesInscritos</p>
+        <h4>@_evento.Nome</h4>
+        <p>Data: @_evento.Data.ToShortDateString()</p>
+        <p>Hora: @_evento.Hora</p>
+        <p>Local: @_evento.Local</p>
+        <p>Categoria: @_evento.Categoria</p>
+        <p>Capacidade: @_evento.Capacidade</p>
+        <p>Número de Atividades: @_evento.NumeroAtidades</p>
+        <p>Ingresso Barato: @_evento.IngressoBarato</p>
+        <p>Participantes Inscritos: @_evento.ParticipantesInscritos</p>
     </div>
 
     <h4>Atividades do Evento</h4>
-    @if (evento.Atividades != null && evento.Atividades.Any())
+    @if (_evento.Atividades != null && _evento.Atividades.Any())
     {
-        <ul>
-            @foreach (var atividade in evento.Atividades)
+        <div class="eventos-container">
+            @foreach (var atividade in _evento.Atividades)
             {
-                <h5>@atividade.Nome</h5>
-                <li>@atividade.Data</li>
-                <li>@atividade.Hora</li>
-                <li>@atividade.Descricao</li>
-                <button @onclick="() => ListarParticipantes(atividade.Id)">Listar Participantes</button>
-                <button @onclick="() => EditarAtividade(atividade.Id)">Editar Atividade</button>
-                <button @onclick="() => RemoverAtividade(atividade.Id)">Remover Atividade</button>
+                <div class="evento-card">
+                    <h5>@atividade.Nome</h5>
+                    <p>@atividade.Data</p>
+                    <p>@atividade.Hora</p>
+                    <p>@atividade.Descricao</p>
+                    <button class="btn btn-primary" @onclick="() => ListarParticipantes(atividade.Id)">Listar Participantes</button>
+                    <button class="btn btn-primary" @onclick="() => EditarAtividade(atividade.Id)">Editar Atividade</button>
+                    <button class="btn btn-danger" @onclick="() => RemoverAtividade(atividade)">Remover Atividade</button>
+                </div>
             }
-        </ul>
+        </div>
     }
     else
     {
@@ -50,14 +52,14 @@ else
         </p>
     }
 
-    <button @onclick="() => AdicionarAtividade(evento.Id)">Adicionar Atividade</button>
+    <button class="btn btn-success" @onclick="() => AdicionarAtividade(_evento.Id)">Adicionar Atividade</button>
     
     
     <h4>Ingressos do Evento</h4>
-    @if (evento.Ingressos != null && evento.Ingressos.Any())
+    @if (_evento.Ingressos != null && _evento.Ingressos.Any())
     {
         <ul>
-            @foreach (var ingresso in evento.Ingressos)
+            @foreach (var ingresso in _evento.Ingressos)
             {
                 <h5>@ingresso.Nome</h5>
                 <li>Preço: @ingresso.Preco</li>
@@ -68,8 +70,8 @@ else
         </ul>
     }
 
-    <button @onclick="EditarEvento">Editar Evento</button>
-    <button @onclick="RemoverEvento">Remover Evento</button>
+    <button class="btn btn-primary" @onclick="EditarEvento">Editar Evento</button>
+    <button class="btn btn-danger" @onclick="RemoverEvento">Remover Evento</button>
 }
 
 <style>
@@ -80,7 +82,7 @@ else
 </style>
 
 @code {
-    private EventoDetailsModel evento;
+    private EventoDetailsModel? _evento;
 
     [Parameter]
     public string Id { get; set; }
@@ -89,22 +91,22 @@ else
     {
         if (!string.IsNullOrEmpty(Id))
         {
-            var idPGuid = Guid.Parse(Id);
-            evento = await Http.GetFromJsonAsync<EventoDetailsModel>($"http://localhost:5052/api/Evento/Detalhe/{idPGuid}");
+            _evento = await Http.GetFromJsonAsync<EventoDetailsModel>($"http://localhost:5052/api/Evento/Detalhe/{Guid.Parse(Id)}");
         }
     }
 
     private void AdicionarAtividade(Guid idEvento)
     {
-        NavigationManager.NavigateTo($"/criar-atividade/{idEvento}");
+        if (_evento!.NumeroAtidades <= 5) NavigationManager.NavigateTo($"/criar-atividade/{idEvento}");
+        
+        else Console.WriteLine("Ja atingiu o limete de 5 atividades");
     }
 
-    private async Task RemoverAtividade(Guid idAtividade)
+    private async Task RemoverAtividade(AtividadeDetalheModel atividade)
     {
-        //await ServiceAtividade.RemoverAtividade(idAtividade);
+        bool response = await ServiceAtividade.RemoverAtividade(atividade.Id);
 
-        var idPGuid = Guid.Parse(Id);
-        evento = await Http.GetFromJsonAsync<EventoDetailsModel>($"http://localhost:5052/api/Evento/Detalhe/{idPGuid}");
+        if (response) _evento!.Atividades!.Remove(atividade);
     }
 
     private void EditarAtividade(Guid idAtividade)
@@ -127,3 +129,21 @@ else
         NavigationManager.NavigateTo($"/ListarParticipantes/{idAtividade}");
     }
 }
+
+
+<style>
+    .eventos-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .evento-card {
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+
+    .btn-acessar-evento {
+        margin-top: 10px;
+    }
+</style>
