@@ -3,6 +3,7 @@
 @using BusinessLogic.Services
 @inject HttpClient Http
 @inject IAtividadeService ServiceAtividade
+@inject IEventoService ServiceEvento
 @inject NavigationManager NavigationManager
 
 <h3>Detalhes do Evento (Organizador)</h3>
@@ -71,7 +72,7 @@ else
     }
 
     <button class="btn btn-primary" @onclick="EditarEvento">Editar Evento</button>
-    <button class="btn btn-danger" @onclick="RemoverEvento">Remover Evento</button>
+    <button class="btn btn-danger" @onclick="EliminarEvento">Remover Evento</button>
 }
 
 <style>
@@ -119,9 +120,13 @@ else
         NavigationManager.NavigateTo($"/EditarEvento/{Id}");
     }
 
-    private void RemoverEvento()
+    private async Task EliminarEvento()
     {
-        NavigationManager.NavigateTo($"/RemoverEvento/{Id}");
+        UtilizadorDetalheModel utilizador = _evento!.Organizador!;
+        
+        bool response = await ServiceEvento.RemoverEvento(Guid.Parse(Id));
+
+        if (response) NavigationManager.NavigateTo($"/eventos/{utilizador.Id}");
     }
 
     private void ListarParticipantes(Guid idAtividade)
