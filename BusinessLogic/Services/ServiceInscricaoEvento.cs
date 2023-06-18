@@ -6,7 +6,7 @@ using BusinessLogic.Models;
 
 namespace BusinessLogic.Services
 {
-    public interface IInscricaoService
+    public interface IInscricaoEventoService
     {
         Task<bool> Inscrever(CreateInscricaoEventoModel model);
         Task<bool> RemoverInscricao(Guid id);
@@ -16,7 +16,7 @@ namespace BusinessLogic.Services
         Task<GetInscricaoEvento?> GetEventosInscrito(Guid idParticipante);
     }
 
-    public class ServiceInscricaoEvento : IInscricaoService
+    public class ServiceInscricaoEvento : IInscricaoEventoService
     {
         private readonly HttpClient _httpClient;
         private readonly IFeedbackService _feedbackService;
@@ -84,8 +84,10 @@ namespace BusinessLogic.Services
         public async Task<bool> VerificarInscricaoEvento(Guid idEvento, Guid idParticipante)
         {
             var response = await _httpClient.GetAsync($"http://localhost:5052/api/InscricaoEvento/CheckInscricao/{idEvento}/{idParticipante}");
-            
-            return response.IsSuccessStatusCode;
+
+            if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<bool>();
+
+            return false;
         }
 
         public async Task<GetInscricaoEvento?> GetEventosInscrito(Guid idParticipante)

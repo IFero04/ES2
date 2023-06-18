@@ -37,19 +37,33 @@ public class ServiceFeedback : IFeedbackService
         }
     }
 
+    public async Task<bool> VerificarFeedbackByInscricao(Guid idInscricao)
+    {
+        var response = await _httpClient.GetAsync($"http://localhost:5052/api/Feedback/CheckFeedbackByInscricao/{idInscricao}");
+            
+        if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<bool>();
+
+        return false;
+    }
+
     public async Task<Feedback?> GetFeedbackByInscricao(Guid idInscricao)
     {
         try
         {
-            var response = await _httpClient.GetAsync($"http://localhost:5052/api/Feedback/ByInscricao/{idInscricao}");
+            if (await VerificarFeedbackByInscricao(idInscricao))
+            {
+                var response = await _httpClient.GetAsync($"http://localhost:5052/api/Feedback/ByInscricao/{idInscricao}");
 
-            if (response.IsSuccessStatusCode)
-            {
-                var feedback = await response.Content.ReadFromJsonAsync<Feedback>();
-                return feedback;
-            }
-            if (response.StatusCode == HttpStatusCode.NotFound)
-            {
+                if (response.IsSuccessStatusCode)
+                {
+                    var feedback = await response.Content.ReadFromJsonAsync<Feedback>();
+                    return feedback;
+                }
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+
                 return null;
             }
 

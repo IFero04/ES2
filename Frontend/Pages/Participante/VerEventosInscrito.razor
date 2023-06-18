@@ -2,7 +2,7 @@
 @using System.IdentityModel.Tokens.Jwt
 @using BusinessLogic.Models
 @using BusinessLogic.Services
-@inject IInscricaoService ServiceInscricaoEvento
+@inject IInscricaoEventoService ServiceInscricaoEvento
 @inject IEventoService ServiceEvento
 @inject IJSRuntime JsRuntime
 @inject HttpClient Http
@@ -10,12 +10,7 @@
 
 <h3>VerEventosParticipante</h3>
 
-<div class="search-bar">
-    <input type="text" @bind="_searchTerm" placeholder="Pesquisar por nome, local, data ou categoria" />
-    <button @onclick="FilterEventos">Pesquisar</button>
-</div>
-
-@if (_eventos == null)
+@if (_eventos!.Count == 0 || _eventos == null)
 {
     <p>
         <em>Sem Eventos...</em>
@@ -23,6 +18,11 @@
 }
 else
 {
+    <div class="search-bar">
+        <input type="text" @bind="_searchTerm" placeholder="Pesquisar por nome, local, data ou categoria" />
+        <button @onclick="FilterEventos">Pesquisar</button>
+    </div>
+    
     <div class="eventos-container">
         @foreach (var evento in _eventosFiltrados!)
         {
@@ -77,19 +77,19 @@ else
 
         if (inscricoes != null)
         {
-            for (int i = 0; i < inscricoes.IdEventos!.Count; i++)
+            for (int i = 0; i < inscricoes.IdEventos.Count; i++)
             {
                 var temp = await ServiceEvento.GetDetalhesEvento(inscricoes.IdEventos[i]);
                 if (temp != null)
                 {
-                    foreach (var ingresso in inscricoes.Ingressos!)
+                    foreach (var ingresso in inscricoes.Ingressos)
                     {
-                        temp.Ingressos!.Add(ingresso);
+                        temp.Ingressos.Add(ingresso);
                     }
                     _eventos?.Add(temp);
                 }
             }
-        
+            
             _eventosFiltrados = _eventos;
         }
     }

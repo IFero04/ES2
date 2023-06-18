@@ -2,10 +2,12 @@
 @using System.IdentityModel.Tokens.Jwt
 @using BusinessLogic.Models
 @using BusinessLogic.Services
-@inject IInscricaoService ServiceInscricaoEvento
+@inject IInscricaoEventoService ServiceInscricaoEvento
 @inject IInscricaoAtividadeService ServiceInscricaoAtividade
 @inject IEventoService ServiceEvento
 @inject IJSRuntime JsRuntime
+@inject HttpClient Http
+
 
 <h3>Detalhes do Evento</h3>
 
@@ -94,6 +96,7 @@ else
     {
         if (_selectedIngresso == null) return;
         if (Id == null) return;
+        if (_jaInscrito) return;
         
         var model = new CreateInscricaoEventoModel()
         {
@@ -108,9 +111,15 @@ else
     
     private async Task RegistrarAtividade(Guid atividadeId)
     {
-        bool inscrito = await ServiceInscricaoAtividade.VerificarInscricaoAtividade(atividadeId, Guid.Parse(_tokenClaims["idUtilizador"]));
+        if(!_jaInscrito) return;
         
-        if(inscrito) return;
+        bool inscrito = await ServiceInscricaoAtividade.VerificarInscricaoAtividade(atividadeId, Guid.Parse(_tokenClaims["idUtilizador"]));
+
+        if (inscrito)
+        {
+            Console.WriteLine("Já Inscrito");
+            return;
+        }
 
         var model = new CreateInscricaoAtividadeModel()
         {
@@ -163,7 +172,7 @@ else
         
         await HandleEvento();
 
-        if (Id != null) _jaInscrito = await ServiceInscricaoAtividade.VerificarInscricaoAtividade(Guid.Parse(Id), Guid.Parse(_tokenClaims["idUtilizador"]));
+        _jaInscrito = await ServiceInscricaoEvento.VerificarInscricaoEvento(Guid.Parse(Id), Guid.Parse(_tokenClaims["idUtilizador"]));
     }
     
 }

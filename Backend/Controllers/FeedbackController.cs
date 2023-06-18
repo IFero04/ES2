@@ -30,6 +30,14 @@ namespace Backend.Controllers
 
             return feedback;
         }
+        
+        [HttpGet("CheckFeedbackByInscricao/{idInscricao}")]
+        public async Task<ActionResult<bool>> CheckFeedbackByInscricao(Guid idInscricao)
+        {
+            var haveFeedback = await _context.Feedbacks.FirstOrDefaultAsync(f => f.IdInscricao == idInscricao);
+
+            return haveFeedback != null;
+        }
 
         //CRUD -- INICIO --
         

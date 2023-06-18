@@ -34,7 +34,9 @@ public class ServiceInscricaoAtividade : IInscricaoAtividadeService
     {
         var response = await _httpClient.GetAsync($"http://localhost:5052/api/InscricaoAtividade/CheckInscricao/{idAtividade}/{idParticipante}");
         
-        return response.IsSuccessStatusCode;
+        if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<bool>();
+
+        return false;
     }
 
     public async Task<bool> RemoverInscricao(Guid id)
