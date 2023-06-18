@@ -27,8 +27,8 @@ VALUES
 -- Inserção na tabela 'inscricao_evento'
 INSERT INTO inscricao_evento (id_evento, id_participante, tipo_ingresso)
 VALUES
-    ((SELECT id FROM evento WHERE nome = 'Concerto de Rock'), (SELECT id FROM public.utilizador WHERE username = 'jo'), (SELECT id FROM ingresso WHERE nome = 'Ingresso Único')),
-    ((SELECT id FROM evento WHERE nome = 'Feira de Artesanato'), (SELECT id FROM public.utilizador WHERE username = 'jo'), (SELECT id FROM ingresso WHERE nome = 'Ingresso Padrão'));
+    ((SELECT id FROM evento WHERE nome = 'Concerto de Rock'), (SELECT id FROM public.utilizador WHERE username = 'jo'), (SELECT id FROM ingresso WHERE nome = 'Ingresso Padrão')),
+    ((SELECT id FROM evento WHERE nome = 'Feira de Artesanato'), (SELECT id FROM public.utilizador WHERE username = 'jo'), (SELECT id FROM ingresso WHERE nome = 'Ingresso Único'));
 
 -- Inserção na tabela 'inscricao_atividade'
 INSERT INTO inscricao_atividade (id_atividade, id_participante)

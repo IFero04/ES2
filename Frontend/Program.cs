@@ -16,5 +16,8 @@ builder.Services.AddScoped<IFeedbackService, ServiceFeedback>();
 builder.Services.AddScoped<IInscricaoAtividadeService, ServiceInscricaoAtividade>();
 builder.Services.AddScoped<IInscricaoEventoService, ServiceInscricaoEvento>();
 builder.Services.AddScoped<IUtilizadorService, ServiceUtilizador>();
-builder.Services.AddScoped<ServiceEvento>();
+builder.Services.AddScoped<IIngressosService, ServiceIngressos>();
+builder.Services.AddScoped<IMensagensService, ServiceMensagens>();
+
+
 await builder.Build().RunAsync();

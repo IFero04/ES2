@@ -17,6 +17,29 @@ namespace Backend.Controllers
             _context = context;
         }
 
+        [HttpGet("CheckIngressoByEvento/{idEvento}")]
+        public async Task<ActionResult<bool>> CheckIngressoByEvento(Guid idEvento)
+        {
+            var haveIngresso = await _context.Ingressos.FirstOrDefaultAsync(i => i.IdEvento == idEvento);
+
+            return haveIngresso != null;
+        }
+
+        [HttpGet("GetIngressoByEvento/{idEvento}")]
+        public async Task<ActionResult<List<Ingresso>>> GetIngressoByEvento(Guid idEvento)
+        {
+            var ingressos = await _context.Ingressos
+                .Where(i => i.IdEvento == idEvento)
+                .ToListAsync();
+
+            if (ingressos.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return ingressos;
+        }
+        
         // GET: api/Ingresso
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Ingresso>>> GetIngressos()

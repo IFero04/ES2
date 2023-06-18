@@ -100,7 +100,7 @@ else
         Guid? id = await ServiceInscricaoEvento.GetInscricaoByEventoParticipanteId(eventoDetails.Id, Guid.Parse(_tokenClaims["idUtilizador"]));
         if (id != null)
         {
-            bool removido = await ServiceInscricaoEvento.RemoverInscricao(id.Value, eventoDetails.Id, Guid.Parse(_tokenClaims["idUtilizador"]));
+            bool removido = await ServiceInscricaoEvento.RemoverInscricaoEspc(id.Value, eventoDetails.Id, Guid.Parse(_tokenClaims["idUtilizador"]));
             if (removido)
             {
                 _jaInscrito = false;

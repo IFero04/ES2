@@ -17,6 +17,20 @@ namespace Backend.Controllers
             _context = context;
         }
 
+        [HttpGet("CheckMensagemByEvento/{idEvento}")]
+        public async Task<ActionResult<bool>> CheckMensagemByEvento(Guid idEvento)
+        {
+            var exists = await _context.Mensagems.AnyAsync(m => m.IdEvento == idEvento);
+            return exists;
+        }
+
+        [HttpGet("GetMensagensByEvento/{idEvento}")]
+        public async Task<ActionResult<Mensagem[]>> GetMensagensByEvento(Guid idEvento)
+        {
+            var mensagens = await _context.Mensagems.Where(m => m.IdEvento == idEvento).ToArrayAsync();
+            return mensagens;
+        }
+        
         // GET: api/Mensagem
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Mensagem>>> GetMensagems()

@@ -3,10 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using BusinessLogic.Context;
 using BusinessLogic.Entities;
 using BusinessLogic.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Backend.Controllers
 {
@@ -19,6 +15,29 @@ namespace Backend.Controllers
         public InscricaoEventoController(ES2DBContext context)
         {
             _context = context;
+        }
+        
+        [HttpGet("CheckInscricaoByEvento/{idEvento}")]
+        public async Task<ActionResult<bool>> CheckInscricaoByEvento(Guid idEvento)
+        {
+            var haveInscricao = await _context.InscricaoEventos.FirstOrDefaultAsync(i => i.IdEvento == idEvento);
+
+            return haveInscricao != null;
+        }
+
+        [HttpGet("GetInscricaoByEvento/{idEvento}")]
+        public async Task<ActionResult<List<InscricaoEvento>>> GetInscricaoByEvento(Guid idEvento)
+        {
+            var inscricoesEvento = await _context.InscricaoEventos
+                .Where(i => i.IdEvento == idEvento)
+                .ToListAsync();
+
+            if (inscricoesEvento.Count() == 0)
+            {
+                return NotFound();
+            }
+
+            return inscricoesEvento;
         }
 
         [HttpGet("GetEventosInscritos/{idParticipante}")]
